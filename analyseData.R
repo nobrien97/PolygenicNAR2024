@@ -27,3 +27,6 @@ source("./R/Gmatrix.R")
 
 # Find effect sizes of individual mutations
 source("./R/FX.R")
+
+# Phenotype figures
+source("./R/adaptiveWalk.R")

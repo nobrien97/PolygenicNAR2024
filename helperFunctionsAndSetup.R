@@ -19,6 +19,13 @@ library(DMwR2)
 library(mcreplicate)
 library(betareg)
 library(car)
+library(emmeans)
+library(nlme)
+library(MASS)
+library(xtable)
+library(stargazer)
+library(Rcpp)
+
 
 # Increasing recombination leads to relatively linear response with some
 # thresholds at -10, -5, -1
@@ -53,6 +60,7 @@ get_legend <- function(plot, legend = NULL) {
 summarise <- dplyr::summarise
 mutate <- dplyr::mutate
 rename <- dplyr::rename
+select <- dplyr::select
 
 
 # Misc functions
