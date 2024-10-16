@@ -1,0 +1,152 @@
+// set up a simple neutral simulation
+initialize() {
+	initializeMutationRate(1e-7);
+	
+	// m1 mutation type: neutral
+	initializeMutationType("m1", 0.5, "f", 0.0);
+	initializeMutationType("m2", 0.5, "f", 0.0);
+	initializeMutationType("m3", 0.5, "f", 0.0);
+
+	
+	// g1 genomic element type: uses m1 for all mutations
+	initializeGenomicElementType("g1", m1, 1.0);
+	
+	// uniform chromosome of length 100 kb with uniform recombination
+	initializeGenomicElement(g1, 0, 4);
+	initializeRecombinationRate(1e-8);
+}
+
+function (integer) encodeCantorPairs(i x, i y) {
+	return asInteger(0.5 * (x + y) * (x + y + 1) + y);
+}
+
+function (integer) decodeCantorPairs(i z) {
+	w = floor((sqrt(8*z+1)-1) * 0.5);
+	t = (w*w + w) * 0.5;
+	
+	y = asInteger(z - t);
+	x = asInteger(w - y);
+	return matrix(c(x, y), ncol = length(z), byrow = T);
+}
+
+// Return pairwise permutations of a vector
+function (integer) perm(i x, [l$ includeDiag = F]) {
+	// Create output matrix with all combinations
+	y = rep(x, length(x));
+	z = repEach(x, length(x));
+	
+	// Encode values with Cantor pair
+	comb = encodeCantorPairs(y, z);	
+
+	comboMatrix = matrix(comb, nrow = length(x));
+	
+	// Remove duplicates
+	comboMatrix = comboMatrix[c(upperTri(comboMatrix, includeDiag))];
+	
+	// return matrix of x and y
+	return decodeCantorPairs(comboMatrix); 
+}
+ 
+function (string$) sharedFreq(o<Mutation>$ A, o<Mutation>$ B) {
+	pA = sim.mutationFrequencies(p1, A);
+	pB = sim.mutationFrequencies(p1, B);
+	
+	pa = 1 - pA;
+	pb = 1 - pB;
+	
+	pAB = size(p1.genomes[p1.genomes.containsMutations(A) & p1.genomes.containsMutations(B)])/size(p1.genomes);
+	pAb = size(p1.genomes[p1.genomes.containsMutations(A) & !p1.genomes.containsMutations(B)])/size(p1.genomes);
+	paB = size(p1.genomes[!p1.genomes.containsMutations(A) & p1.genomes.containsMutations(B)])/size(p1.genomes);
+	pab = size(p1.genomes[!p1.genomes.containsMutations(A) & !p1.genomes.containsMutations(B)])/size(p1.genomes);
+	
+	DAB = pAB - pA * pB;
+	DAb = pAb - pA * pb;
+	DaB = paB - pa * pB;
+	Dab = pab - pa * pb;
+	
+	return paste("pA:", pA, "pB:", pB, "pa:", pa, "pb:", pb, "pAB:", pAB, "pAb:", pAb, "paB:", paB, "pab:", pab,
+					 "DAB:", DAB, "DAb:", DAb, "DaB:", DaB, "Dab", Dab);
+}
+
+// create a population of 500 individuals
+1 early() {
+	sim.addSubpop("p1", 500);
+	
+	/* Test expectation in console
+	B = sim.mutations[0];
+	A = sim.mutations[1];
+	sharedFreq(A, B);
+	sim.calcLDBetweenSitePairs(p1, 2, 3, "D", T);
+	*/	
+	
+	// Add a mutation to half the genomes, a different one to the other half: -1 LD expected
+	
+	inds = p1.sampleIndividuals(250);
+	inds2 = setDifference(p1.individuals, inds);
+	inds.genomes.addNewMutation(m3, 0, 3);
+	inds2.genomes.addNewMutation(m3, 0, 2);
+	
+	
+	// Add two mutations to half the genomes: 1 LD expected
+	/*
+	inds = p1.sampleIndividuals(250);
+	inds.genomes.addNewMutation(m3, 0, 3);
+	inds.genomes.addNewMutation(m3, 0, 2);
+	*/
+	
+	// Add two mutations so they are completely unlinked: 0 LD expected
+	/*
+	inds = p1.sampleIndividuals(125);
+	inds2 = setDifference(p1.individuals, inds)[0:124];
+	inds3 = setDifference(p1.individuals, inds)[125:249];
+	inds.genomes.addNewMutation(m3, 0, 3);
+	inds.genomes.addNewMutation(m3, 0, 2);
+	
+	mut1 = sim.mutations[sim.mutations.position == 3];
+	mut2 = sim.mutations[sim.mutations.position == 2];
+	
+	inds2.genomes.addMutations(mut1);
+	inds3.genomes.addMutations(mut2);
+	*/
+	
+	// Add mutations somewhere in the middle, random amount of assortment: but should be slightly positive
+	// Add two mutations to half the genomes
+	/*
+	inds = p1.sampleIndividuals(250);
+	inds.genomes.addNewMutation(m3, 0, 3);
+	inds.genomes.addNewMutation(m3, 0, 2);
+	
+	// Then add one or the other to a small number of other genomes to dilute the signal
+	inds2 = setDifference(p1.individuals, inds)[0:49];
+	inds3 = setDifference(p1.individuals, inds)[50:99];
+	
+	mut1 = sim.mutations[sim.mutations.position == 3];
+	mut2 = sim.mutations[sim.mutations.position == 2];
+	
+	inds2.genomes.addMutations(mut1);
+	inds3.genomes.addMutations(mut2);
+	*/
+	
+	// Add mutations somewhere in the middle, random amount of assortment: but should be slightly negative
+	// Add mutations separately to difference genomes
+	/*
+	inds = p1.sampleIndividuals(125);
+	inds2 = setDifference(p1.individuals, inds)[0:124];
+	inds.genomes.addNewMutation(m3, 0, 3);
+	inds2.genomes.addNewMutation(m3, 0, 2);
+	
+	// Add a small number to both
+	mut1 = sim.mutations[sim.mutations.position == 3];
+	mut2 = sim.mutations[sim.mutations.position == 2];
+
+	inds = c(inds, inds2);
+	inds2 = setDifference(p1.individuals, inds)[0:9];
+	inds2.genomes.addMutations(mut1);
+	inds2.genomes.addMutations(mut2);
+	*/
+}
+
+// output samples of 10 genomes periodically, all fixed mutations at end
+1000 late() { p1.outputSample(10); }
+2000 late() { p1.outputSample(10); }
+2000 late() { sim.outputFixedMutations(); }
