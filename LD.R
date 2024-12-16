@@ -55,7 +55,9 @@ d_ld_dist_hist <- d_ld %>% select(gen, seed, optPerc, model, nloci, tau, r, 10:2
   ungroup()
 
 # Plot histogram
+# Offset x axis since we group leftwise [x, y), offset is half the bin size, 0.025/2
 ggplot(d_ld_dist_hist %>% mutate(col = bins[as.numeric(str_extract(col, "[0-9]+"))],
+                                 col_num = as.numeric(col) + 0.025/2,
                                  r_title = "Recombination rate (log10)",
                                  nloci_title = "Number of loci",
                                  tau_title = "Mutational effect size variance") %>%
@@ -64,7 +66,7 @@ ggplot(d_ld_dist_hist %>% mutate(col = bins[as.numeric(str_extract(col, "[0-9]+"
                                    "K-" = "ODE")) %>%
          filter(log10(r) == -10 | log10(r) == -5 | log10(r) == -1,
                 tau == 0.0125), 
-       aes(x = col, y = prop, colour = model, group = interaction(col, model))) +
+       aes(x = col_num, y = prop, colour = model, group = interaction(col, model))) +
   facet_nested(r_title + log10(r) ~ model) +
   geom_boxplot(position = position_identity(), outlier.shape = 1,
                outlier.alpha = 0.5) +
@@ -75,6 +77,8 @@ ggplot(d_ld_dist_hist %>% mutate(col = bins[as.numeric(str_extract(col, "[0-9]+"
   ) +
   scale_colour_manual(values = paletteer_d("nationalparkcolors::Everglades", 3, direction = -1),
                       labels = c("Additive", "K+", "K-"), guide = "none") +
+  scale_x_continuous(breaks = c(-0.2, -0.1, 0, 0.1, 0.2), 
+                     labels = c(-0.2, -0.1, 0, 0.1, 0.2)) +
   labs(x = "D", y = "Proportion of estimates", colour = "Model") +
   theme_bw() +
   theme(text = element_text(size = 14), legend.position = "bottom") -> plt_ld_sml
@@ -122,6 +126,7 @@ d_ld_freq_dist_hist <- d_ld_freq %>% filter(freqBin > 0.1) %>%
 # Number of loci doesn't matter
 # Doesn't appear to be related to effect size variance
 ggplot(d_ld_freq_dist_hist %>% mutate(col = bins[as.numeric(str_extract(col, "[0-9]+"))],
+                                      col_num = as.numeric(col) + 0.025/2,
                                       r_title = "Recombination rate (log10)",
                                       nloci_title = "Number of loci",
                                       tau_title = "Mutational effect size variance") %>%
@@ -130,7 +135,7 @@ ggplot(d_ld_freq_dist_hist %>% mutate(col = bins[as.numeric(str_extract(col, "[0
                                    "K-" = "ODE")) %>%
          filter(log10(r) == -10 | log10(r) == -5 | log10(r) == -1) %>%
          filter(tau == 0.0125), 
-       aes(x = col, y = prop, colour = model, group = interaction(col, model))) +
+       aes(x = col_num, y = prop, colour = model, group = interaction(col, model))) +
   facet_nested(r_title + log10(r) ~ model) +
   geom_boxplot(position = position_identity(), outlier.shape = 1,
                outlier.alpha = 0.2) +
@@ -141,6 +146,8 @@ ggplot(d_ld_freq_dist_hist %>% mutate(col = bins[as.numeric(str_extract(col, "[0
   ) +
   scale_colour_manual(values = paletteer_d("nationalparkcolors::Everglades", 3, direction = -1),
                       labels = c("Additive", "K+", "K-"), guide = "none") +
+  scale_x_continuous(breaks = c(-0.2, -0.1, 0, 0.1, 0.2), 
+                     labels = c(-0.2, -0.1, 0, 0.1, 0.2)) +
   labs(x = "D", y = "Proportion of estimates", colour = "Model") +
   theme_bw() +
   theme(text = element_text(size = 14), legend.position = "bottom") -> plt_ld_freq_sml
