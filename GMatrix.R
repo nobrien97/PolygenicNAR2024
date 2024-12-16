@@ -207,7 +207,7 @@ d_h2 %>% filter(isAdapted) %>%
 
 # Separate into model indices
 # each sublist is replicates of a model index
-sourceCpp("./R/getCovarianceMatrices.cpp")
+sourceCpp("./getCovarianceMatrices.cpp")
 lapply(split_h2, function(x) {extractCovarianceMatrices(as.data.frame(x))}) -> cov_matrices
 lapply(split_h2, function(x) {data.frame(optPerc = x$optPerc, seed = x$seed, modelindex = x$modelindex, isAdapted = x$isAdapted)}) -> cov_matrix_modelindex
 
@@ -223,7 +223,7 @@ cov_matrix_modelindex <- GetMatrixIDs(split_h2)
 
 # Distance between G matrices
 # Analysis across all timepoints, timepoint doesn't affect the tree structure
-sourceCpp("./R/distanceFunctions.cpp")
+sourceCpp("./distanceFunctions.cpp")
 
 dist_matrix <- distanceMatrix(h2_mat)
 colnames(dist_matrix) <- paste("Matrix", 1:nrow(dist_matrix))
