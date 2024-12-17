@@ -25,6 +25,7 @@ library(MASS)
 library(xtable)
 library(stargazer)
 library(Rcpp)
+library(dendextend)
 
 
 # Increasing recombination leads to relatively linear response with some
