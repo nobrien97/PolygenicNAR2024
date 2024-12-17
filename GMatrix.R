@@ -238,8 +238,15 @@ plot(as.phylo(hc), type="phylogram", main="Phylogenetic Tree of G Matrices")
 fviz_nbclust(dist_matrix, kmeans, method = "wss", k.max = 24) + theme_minimal() + ggtitle("the Elbow Method")
 
 # dendrogram
-plot(hc, main = "Power Euclidean distances between molecular G matrices", labels = F)
+png(file = "dendrogram_totaldist_noZ.png",
+    height = 2250/2, width = 2250, units = "px")
+par(lwd=2, mar=c(8,8,8,8))
+plot(hc, main = "Power Euclidean distances between molecular G matrices", labels = F,
+     cex.main = 2, cex.lab = 2, xlab = "", sub = "", axes = F)
 rect.hclust(hc, 2, border = 2)
+axis(2, lwd = 2, cex.axis = 2)
+dev.off()
+
 
 clus <- cutree(hc, 2)
 g <- split(names(clus), clus)
