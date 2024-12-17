@@ -11,22 +11,19 @@ DATA_PATH <- "/path/to/data/"
 setwd(REPO_PATH)
 
 # Load functions
-source("./R/helperFunctionsAndSetup.R")
-
-# Setup data
-source("./R/wrangle_data.R")
+source("./helperFunctionsAndSetup.R")
 
 # Analyse epistasis data
-source("./R/epistasis.R")
+source("./epistasis.R")
 
 # Analyse LD data
-source("./R/LD.R")
+source("./LD.R")
 
 # Analyse G matrices
-source("./R/Gmatrix.R")
+source("./Gmatrix.R")
 
 # Find effect sizes of individual mutations
-source("./R/FX.R")
+source("./FX.R")
 
 # Phenotype figures
-source("./R/adaptiveWalk.R")
+source("./adaptiveWalk.R")
