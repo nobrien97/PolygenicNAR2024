@@ -121,6 +121,7 @@ CI(d_adaptTime[d_adaptTime$tau > 0.0125,]$adaptTime)
          colour = "Model") +
     theme_bw() +
     theme(legend.position = "bottom", text = element_text(size = 14)) -> adapt_grid_smlFX
+  ggsave("adapt_grid_smlFX.png", adapt_grid_smlFX, width = 14, height = 10, device = png)
   
   ggplot(d_adapted_sum %>% filter(tau == 0.125),
          aes(x = gen, y = meanPhenomean, colour = model),
@@ -145,6 +146,7 @@ CI(d_adaptTime[d_adaptTime$tau > 0.0125,]$adaptTime)
          colour = "Model") +
     theme_bw() +
     theme(legend.position = "bottom", text = element_text(size = 14)) -> adapt_grid_medFX
+  ggsave("adapt_grid_medFX.png", adapt_grid_medFX, width = 14, height = 10, device = png)
   
   ggplot(d_adapted_sum %>% filter(tau == 1.25),
          aes(x = gen, y = meanPhenomean, colour = model),
@@ -169,9 +171,10 @@ CI(d_adaptTime[d_adaptTime$tau > 0.0125,]$adaptTime)
          colour = "Model") +
     theme_bw() +
     theme(legend.position = "bottom", text = element_text(size = 14)) -> adapt_grid_lrgFX
+  ggsave("adapt_grid_lrgFX.png", adapt_grid_lrgFX, width = 14, height = 10, device = png)
   
   adapt_grid <- plot_grid(adapt_grid_smlFX, adapt_grid_medFX, adapt_grid_lrgFX,
-                          nrow = 3)
+                          labels = "AUTO", nrow = 3)
   
   ggsave("adapt_grid.png", adapt_grid, width = 14, height = 30, device = png)
 }
