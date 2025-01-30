@@ -603,8 +603,10 @@ ggsave("PCASim_r_modelCombo_noZ.png", device = png, width = 7, height = 5)
 # beta regression
 # Distributions
 ggplot(bootPCASim, 
-       aes(x = modelCombo, y = PCASim)) +
+       aes(x = rCombo, y = PCASim)) +
   geom_quasirandom(dodge.width = 0.9)
+
+plot(density(bootPCASim$PCASim))
 
 # Definitely different between models, none are normally distributed
 
@@ -613,7 +615,8 @@ bootPCASim <- bootPCASim %>%
   mutate(PCASim = raster::clamp(PCASim, 0, 1))
 
 # Run regression: this is slow! Uncomment to run, otherwise load in saved object
-# br.pcasim <- betareg(PCASim ~ modelCombo * as.factor(rCombo), bootPCASim)
+# br.pcasim <- betareg(PCASim ~ modelCombo * as.factor(rCombo) | modelCombo * as.factor(rCombo), 
+#                      bootPCASim)
 
 # Save output
 # saveRDS(br.pcasim, "betareg_pcaSim_big.RDS")
@@ -623,7 +626,9 @@ plot(br.pcasim)
 
 car::Anova(br.pcasim, type = 3, test.statistic = "F")
 
-em.pcasim <- emmeans(br.pcasim, ~modelCombo * rCombo)
+# Response is on log-odds scale
+em.pcasim <- emmeans(br.pcasim, ~modelCombo * as.factor(rCombo))
+em.pcasim <- regrid(em.pcasim)
 pairs(em.pcasim, simple = "modelCombo")
 pairs(em.pcasim, simple = "rCombo")
 plot(em.pcasim, comparisons = T)
@@ -631,3 +636,18 @@ pwpp(em.pcasim, by = "modelCombo", type = "response")
 emmip(br.pcasim,  ~ modelCombo | rCombo)
 joint_tests(em.pcasim)
 xtable(em.pcasim)
+
+# fractional logit: easier to get confidence intervals in response scale, 
+# similar results to betareg
+fl.pcasim <- glm(PCASim ~ modelCombo * as.factor(rCombo),
+                 data = bootPCASim,
+                 family = quasibinomial())
+summary(fl.pcasim)
+plot(fl.pcasim)
+em.fl.pcasim <- emmeans(fl.pcasim, ~modelCombo * as.factor(rCombo))
+em.fl.pcasim <- regrid(em.fl.pcasim)
+pairs(em.fl.pcasim, simple = "modelCombo")
+pairs(em.fl.pcasim, simple = "rCombo")
+pwpp(em.fl.pcasim, by = "modelCombo")
+emmip(em.fl.pcasim,  ~ modelCombo | rCombo)
+xtable(em.fl.pcasim)
