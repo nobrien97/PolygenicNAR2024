@@ -1,7 +1,7 @@
 # Have a look at the epistasis data to see which models differ the most
 
 # data
-d_epi_means <- read.table(paste0(DATA_PATH, "d_epi_mean.csv"), header = F, sep = ",",
+d_epi_means <- read.table(paste0(DATA_PATH, "d_epi_mean_new_s.csv"), header = F, sep = ",",
                           col.names = c("optPerc", "modelindex", "meanEP", "sdEP",
                                         "meanEW", "sdEW", "count"))
 
@@ -17,6 +17,8 @@ d_epi_means_plt_sum <- d_epi_means_plt %>%
   summarise(meanEWBar = mean(meanEW),
             CIEWBar = CI(meanEW),
             varEWBar = var(meanEW),
+            meanEWVar = mean(sdEW^2),
+            CIEWVar = CI(sdEW^2),
             n = n())
 
 ggplot(d_epi_means_plt %>%
@@ -34,12 +36,36 @@ ggplot(d_epi_means_plt %>%
              shape = 3, size = 2, position = position_dodge(0.9)) +
   scale_colour_manual(values = paletteer_d("nationalparkcolors::Everglades", 3, direction = -1),
                       guide = "none") +
+  scale_y_continuous(labels = label_sci()) +
   labs(x = "Model", y = "Average fitness epistasis", colour = "Model") +
   scale_x_discrete(labels = c("Additive", "K+", "K-")) +
   theme_bw() +
   theme(text = element_text(size = 14))
 
 ggsave("plt_ew_sml.png", width = 4, height = 7, device = png)
+
+# Variance
+ggplot(d_epi_means_plt %>%
+         mutate(r_title = "Recombination rate (log10)",
+                nloci_title = "Number of loci",
+                tau_title = "Mutational effect size variance"), 
+       aes(x = model, y = sdEW^2, colour = model)) +
+  facet_nested(r_title + log10(r) ~ .) +
+  geom_quasirandom(dodge.width = 0.9) +
+  geom_point(data = d_epi_means_plt_sum %>% 
+               mutate(r_title = "Recombination rate (log10)",
+                      nloci_title = "Number of loci",
+                      tau_title = "Mutational effect size variance"),
+             aes(x = model, y = meanEWVar, group = model), colour = "black",
+             shape = 3, size = 2, position = position_dodge(0.9)) +
+  scale_colour_manual(values = paletteer_d("nationalparkcolors::Everglades", 3, direction = -1),
+                      guide = "none") +
+  scale_y_continuous(labels = label_sci()) +
+  labs(x = "Model", y = "Variance in fitness epistasis", colour = "Model") +
+  scale_x_discrete(labels = c("Additive", "K+", "K-")) +
+  theme_bw() +
+  theme(text = element_text(size = 14))
+ggsave("plt_ew_var.png", width = 4, height = 7, device = png)
 
 # Per molecular component epistasis
 # data

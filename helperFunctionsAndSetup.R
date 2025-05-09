@@ -26,7 +26,7 @@ library(xtable)
 library(stargazer)
 library(Rcpp)
 library(dendextend)
-
+library(sciscales)
 
 # Increasing recombination leads to relatively linear response with some
 # thresholds at -10, -5, -1
