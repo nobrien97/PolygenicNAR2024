@@ -365,6 +365,7 @@ ggplot(d_ecr %>%
                       labels = c("K+", "K-"), breaks = c("K", "ODE")) +
   labs(x = "Progress to the optimum", y = "Mean conditional evolvability",
        colour = "Model") +
+  scale_x_discrete(labels = c("25%", "50%", "75%", "100%")) +
   theme_bw() +
   theme(legend.position = "bottom", 
         legend.box = "vertical", 
@@ -385,6 +386,7 @@ ggplot(d_ecr %>%
                       labels = c("K+", "K-"), breaks = c("K", "ODE")) +
   labs(x = "Progress to the optimum", y = "Mean respondability",
        colour = "Model") +
+  scale_x_discrete(labels = c("25%", "50%", "75%", "100%")) +
   theme_bw() +
   theme(legend.position = "bottom", 
         legend.box = "vertical", 
@@ -403,6 +405,7 @@ ggplot(d_ecr %>%
              shape = 3, size = 2, position = position_dodge(0.9)) +
   scale_colour_manual(values = paletteer_d("nationalparkcolors::Everglades", 3, direction = -1)[2:3],
                       labels = c("K+", "K-"), breaks = c("K", "ODE")) +
+  scale_x_discrete(labels = c("25%", "50%", "75%", "100%")) +
   labs(x = "Progress to the optimum", y = "Mean autonomy",
        colour = "Model") +
   theme_bw() +
@@ -423,6 +426,7 @@ ggplot(d_ecr %>%
              shape = 3, size = 2, position = position_dodge(0.9)) +
   scale_colour_manual(values = paletteer_d("nationalparkcolors::Everglades", 3, direction = -1)[2:3],
                       labels = c("K+", "K-"), breaks = c("K", "ODE")) +
+  scale_x_discrete(labels = c("25%", "50%", "75%", "100%")) +
   labs(x = "Progress to the optimum", y = "Mean evolvability",
        colour = "Model") +
   theme_bw() +
@@ -573,7 +577,8 @@ bootPCASim <- bootPCASim %>%
          rCombo = ifelse(r1 != r2, 
                          paste(as.character(r1), 
                                as.character(r2), sep = "_"), 
-                         as.character(r1)))
+                         as.character(r1))) %>%
+  filter(modelCombo != "Mix")
 
 # recomb by modelCombo
 bootPCASim_sum <- bootPCASim %>%
@@ -587,8 +592,7 @@ ggplot(bootPCASim_sum, aes(
 )) +
   facet_nested(. ~ "Model comparison" + modelCombo,
                labeller = labeller(modelCombo = as_labeller(c("K" = "K+ vs K+",
-                                                              "ODE" = "K- vs K-",
-                                                              "Mix" = "K+ vs K-")))) + 
+                                                              "ODE" = "K- vs K-")))) + 
   geom_tile(aes(fill = meanPCASim)) +
   theme_bw() +
   geom_jitter(data = bootPCASim, mapping = aes(fill = PCASim),
