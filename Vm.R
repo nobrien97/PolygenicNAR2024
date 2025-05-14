@@ -1,9 +1,5 @@
 # Mutational variance
 
-d_h2 <- read.csv(paste0(DATA_PATH, "d_VA_Z.csv"))
-d_h2 <- d_h2[,-1]
-
-
 # Read initial data: pre-adjusted simulations (nloci = 1024, tau = 0.0125)
 d_mutvar <- data.table::fread(paste0(DATA_PATH, "slim_mutvar.csv"), header = F,
                               col.names = c("replicate", "seed", "modelindex", "variance"))
@@ -52,6 +48,77 @@ ggplot(d_mutvar2 %>%
   labs(x = "Model", 
        y = "Mutational variance (log10)") +
   theme_bw() +
-  theme(text = element_text(size = 14), legend.position = "none")
+  theme(text = element_text(size = 14), legend.position = "none") -> plt_vm
+plt_vm
 ggsave("plt_vm_scaled.png", device = png, width = 6, height = 5)  
+
+# Plot adaptive trajectory
+
+# load trait evolution data
+d_qg_adjTau <- data.table::fread(paste0(DATA_PATH, "slim_qg_adjTau.csv"), header = F, 
+                          sep = ",", colClasses = c("integer", "factor", "factor", 
+                                                    rep("numeric", times = 12)), 
+                          col.names = c("gen", "seed", "modelindex", "meanH", "VA",
+                                        "phenomean", "phenovar", "dist", "w", "deltaPheno",
+                                        "deltaw", "aZ", "bZ", "KZ", "KXZ"), 
+                          fill = T)
+
+d_qg_adjTau %>%
+  distinct() %>%
+  group_by(seed, modelindex) %>%
+  mutate(isAdapted = any(gen >= 59800 & between(phenomean, 1.9, 2.1))) %>%
+  ungroup() -> d_qg_adjTau
+
+# Attach additive replicates as well
+d_qg_add <- AddCombosToDF(d_qg) %>% filter(model == "Add", r %in% r_subsample,
+                                nloci == 1024, tau == 0.0125) 
+# join
+d_adapted_adjTau <- full_join(d_qg_adjTau, d_qg_add)
+
+d_adapted_adjTau <- AddCombosToDF(d_adapted_adjTau)
+
+d_adapted_adjTau_sum <- d_adapted_adjTau %>% 
+  filter(isAdapted, gen >= 49500) %>%
+  mutate(gen = gen - 50000) %>%
+  group_by(gen, model, r) %>%
+  summarise(meanPhenomean = mean(phenomean),
+            SEPhenomean = se(phenomean),
+            sdPhenomean = sd(phenomean),
+            meanPhenovar = mean(phenovar),
+            sdPhenovar = sd(phenovar))
+
+ggplot(d_adapted_adjTau_sum,
+       aes(x = gen, y = meanPhenomean, colour = model),
+       group = as.factor(seed)) +
+  facet_grid(log10(r)~.) +
+  geom_line() +
+  geom_hline(yintercept = 2, linetype = "dashed") +
+  geom_ribbon(aes(ymin = meanPhenomean - sdPhenomean, 
+                  ymax = meanPhenomean + sdPhenomean, fill = model), colour = NA,
+              alpha = 0.2) +
+  scale_y_continuous(sec.axis = sec_axis(~ ., name = "Recombination rate (log10)", 
+                                         breaks = NULL, labels = NULL)) +
+  scale_colour_manual(values = paletteer_d("nationalparkcolors::Everglades", 3, direction = -1),
+                      labels = c("Additive", "K+", "K-")) +
+  scale_fill_manual(values = paletteer_d("nationalparkcolors::Everglades", 3, direction = -1),
+                    labels = c("Additive", "K+", "K-"), guide = "none") +
+  labs(x = "Generations post-optimum shift", y = "Mean phenotype", 
+       colour = "Model") +
+  theme_bw() +
+  theme(legend.position = "bottom", text = element_text(size = 14),
+        panel.spacing = unit(0.75, "lines")) -> plt_adapt_adjTau
+plt_adapt_adjTau
+ggsave("plt_adapt_mutScale.png", width = 6, height = 5, device = png)
+
+leg <- get_legend(plt_adapt_adjTau)
+
+# Combine figures
+plt_vm_final <- plot_grid(plt_vm + theme(legend.position = "none"),
+                          plt_adapt_adjTau + theme(legend.position = "none"),
+                          nrow = 2,
+                          labels = "AUTO")
+
+plot_grid(plt_vm_final, leg, nrow = 2, rel_heights = c(1, 0.1)) -> plt_vm_final
+plt_vm_final
+ggsave("plt_vm_final.png", plt_vm_final, width = 8, height = 10, device = png, bg = "white")
 
