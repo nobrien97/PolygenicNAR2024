@@ -192,13 +192,18 @@ mean.s.km <- d_fx_ben %>% filter(model == "ODE") %>%
             upperCL = meanS + CIS,
             lowerCL = meanS - CIS)
 
-summary(gls.s.kp <- gls(s ~ mutType, (d_fx_ben %>% filter(model == "K")), 
+d_fx_ben_km <- d_fx_ben %>% select(-optPerc) %>% filter(model == "ODE") %>% distinct()
+summary(gls.s.km <- gls(s ~ mutType, d_fx_ben_km, 
+                        weights = varIdent(form = ~ 1 | mutType)))
+
+d_fx_ben_k <- d_fx_ben %>% select(-optPerc) %>% filter(model == "K") %>% distinct()
+summary(gls.s.kp <- gls(s ~ mutType, d_fx_ben_k, 
                         weights = 
                           varIdent(form = ~ 1 | mutType)))
 
 plot(gls.s.kp)
 
-em.s.kp <- emmeans(gls.s.kp, ~ mutType)
+em.s.kp <- emmeans(gls.s.kp, ~mutType, mode = "appx-satterthwaite")
 
 anova(gls.s.kp)
 anova(gls.s.km)
