@@ -21,6 +21,17 @@ d_epi_means_plt_sum <- d_epi_means_plt %>%
             CIEWVar = CI(sdEW^2),
             n = n())
 
+# Per model
+d_epi_means_plt %>%
+  group_by(model) %>%
+  summarise(meanEWBar = mean(meanEW),
+            CIEWBar = CI(meanEW),
+            varEWBar = var(meanEW),
+            meanEWVar = mean(sdEW^2),
+            CIEWVar = CI(sdEW^2),
+            n = n())
+
+
 ggplot(d_epi_means_plt %>%
          mutate(r_title = "Recombination rate (log10)",
                 nloci_title = "Number of loci",
