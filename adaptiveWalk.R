@@ -178,3 +178,80 @@ CI(d_adaptTime[d_adaptTime$tau > 0.0125,]$adaptTime)
   
   ggsave("adapt_grid.png", adapt_grid, width = 14, height = 30, device = png)
 }
+
+# Adaptive walk following randomised starting points
+d_qg_rs <- data.table::fread(paste0(DATA_PATH, "slim_qg_randomisedStarts.csv"), header = F, 
+                          sep = ",", colClasses = c("integer", "factor", "factor", 
+                                                    rep("numeric", times = 12)), 
+                          col.names = c("gen", "seed", "modelindex", "meanH", "VA",
+                                        "phenomean", "phenovar", "dist", "w", "deltaPheno",
+                                        "deltaw", "aZ", "bZ", "KZ", "KXZ"), 
+                          fill = T)
+
+# Add on optPerc
+d_qg_rs %>%
+  distinct() %>%
+  group_by(seed, modelindex) %>%
+  mutate(isAdapted = any(gen >= 59800 & between(phenomean, 1.9, 2.1))) %>%
+  ungroup() -> d_qg_rs
+
+d_qg_rs$optPerc <- d_qg_rs$phenomean - 1
+d_qg_rs$optPerc <- cut(d_qg_rs$optPerc, c(-Inf, 0.25, 0.5, 0.75, Inf))
+
+d_qg_rs_optPerc <- d_qg_rs %>% select(gen, seed, modelindex, optPerc, isAdapted) %>% filter(gen >= 49500)
+
+d_qg_rs <- AddCombosToDF(d_qg_rs) 
+
+# Proportion of each model that adapted
+d_prop_adapted_rs <- d_qg_rs %>% group_by(model, nloci, tau, r) %>%
+  filter(gen == 59950) %>%
+  summarise(n = n(),
+            nAdapted = sum(isAdapted),
+            pAdapted = mean(isAdapted)
+  )
+
+# Average over nloci
+# How many adapted in low recombination scenarios?
+d_prop_adapted_rs <- d_qg_rs %>% 
+  mutate(r_cut = cut(r, breaks = c(0, 1e-7, 1),
+                     labels = c("Low", "High"))) %>%
+  group_by(model, tau, r_cut) %>%
+  filter(gen == 59950) %>%
+  summarise(n = n(),
+            nAdapted = sum(isAdapted),
+            pAdapted = mean(isAdapted)
+  )
+d_prop_adapted_rs
+
+d_adapted_rs_sum <- d_qg_rs %>% 
+  filter(isAdapted, gen >= 49500) %>%
+  mutate(gen = gen - 50000) %>%
+  group_by(gen, model, nloci, tau, r) %>%
+  summarise(meanPhenomean = mean(phenomean),
+            SEPhenomean = se(phenomean),
+            sdPhenomean = sd(phenomean),
+            meanPhenovar = mean(phenovar),
+            sdPhenovar = sd(phenovar))
+
+# Small fx only
+ggplot(d_adapted_rs_sum %>% filter(tau == 0.0125, r %in% r_subsample),
+       aes(x = gen, y = meanPhenomean, colour = model),
+       group = as.factor(seed)) +
+  facet_grid(log10(r)~.) +
+  geom_line() +
+  geom_hline(yintercept = 2, linetype = "dashed") +
+  geom_ribbon(aes(ymin = meanPhenomean - sdPhenomean, 
+                  ymax = meanPhenomean + sdPhenomean, fill = model), colour = NA,
+              alpha = 0.2) +
+  scale_y_continuous(sec.axis = sec_axis(~ ., name = "Recombination rate (log10)", 
+                                         breaks = NULL, labels = NULL)) +
+  scale_colour_manual(values = paletteer_d("nationalparkcolors::Everglades", 3, direction = -1)[2:3],
+                      labels = c("K+", "K-")) +
+  scale_fill_manual(values = paletteer_d("nationalparkcolors::Everglades", 3, direction = -1)[2:3],
+                    labels = c("K+", "K-"), guide = "none") +
+  labs(x = "Generations post-optimum shift", y = "Mean phenotype", 
+       colour = "Model") +
+  theme_bw() +
+  theme(legend.position = "bottom", text = element_text(size = 12),
+        panel.spacing = unit(0.75, "lines")) 
+ggsave("plt_adapt_rs.png", width = 6, height = 5, device = png)
