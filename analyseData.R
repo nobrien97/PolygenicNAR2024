@@ -27,3 +27,6 @@ source("./FX.R")
 
 # Phenotype figures
 source("./adaptiveWalk.R")
+
+# Vm figures
+source("./Vm.R")
