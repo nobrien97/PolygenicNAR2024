@@ -1,6 +1,6 @@
 # Analysis of effect sizes for each molecular component
 
-d_fx <- data.table::fread(paste0(DATA_PATH, "d_fx.csv"), header = F, 
+d_fx <- data.table::fread(paste0(DATA_PATH, "d_fx_new.csv"), header = F, 
                           sep = ",", colClasses = c("integer", "factor", "factor",
                                                     "factor", "character", "numeric"), 
                           col.names = c("gen", "seed", "modelindex", 
@@ -40,12 +40,17 @@ mutTypes_vec <- c(TeX("Additive", output = "character"),
                   TeX("$K_Z$", output = "character"),
                   TeX("$K_{XZ}$", output = "character"))
 
+
 # Proportion of mutations that are beneficial in each model
 d_fx_propBen <- d_fx %>%
+  mutate(mutType = factor(mutType, levels = c("2", levels(mutType)))) %>%
   group_by(optPerc, seed, model, mutType, nloci, tau, r) %>%
   mutate(isBen = (s > 0)) %>%
   summarise(propBen = sum(isBen)/n()) %>%
   ungroup()
+
+# Set muttype for additive to a unique id
+d_fx_propBen[d_fx_propBen$model == "Add", "mutType"] <- "2"
 
 d_fx_propBen_sum <- d_fx_propBen %>%
   group_by(model, mutType, r) %>%
@@ -82,23 +87,32 @@ ggsave("plt_propben_muts_wholewalk.png", plt_propben_muts_wholewalk,
 # beta regression
 # adjust for 0/1 values - need to inflate (Smithson + Verkuilen 2006)
 # Set up combinations
+# Use marginaleffects since it supports betareg
+library(marginaleffects)
+
 d_fx_propBen <- transform(d_fx_propBen, modelMutType = factor(interaction(model, mutType)))
 d_fx_propBen$propBen_adj <- (d_fx_propBen$propBen * (nrow(d_fx_propBen)-1) + 0.5)/nrow(d_fx_propBen)
 d_fx_propBen$model <- as.factor(d_fx_propBen$model)
 
+# Bimodality driven by mutation type alone
+plot(density(d_fx_propBen[d_fx_propBen$mutType != 5,]$propBen))
+plot(density(d_fx_propBen[d_fx_propBen$mutType == 5,]$propBen))
+
+# beta regression for everything
 br.benmut <- betareg(propBen_adj ~ mutType, d_fx_propBen)
 
-plot(density(d_fx_propBen$propBen))
 summary(br.benmut)
 plot(br.benmut)
 
 saveRDS(br.benmut, "betareg_benmut.RDS")
-br.benmut <- readRDS("betareg_benmut.RDS")
+br.benmut <- readRDS(paste0(DATA_PATH, "betareg_benmut.RDS"))
 
-anova(br.benmut)
-em.benmut <- emmeans(br.benmut, ~ modelMutType)
+#anova(br.benmut)
+#em.benmut <- emmeans(br.benmut, ~ modelMutType)
 
 
+# Calculate beta regression separately for each model:
+#   Different molecular components in each
 # In additive only one mutation type, so calc mean and CI
 mean.benmut.add <- d_fx_propBen %>% filter(model == "Add") %>%
   summarise(meanPropBen = mean(propBen_adj),
@@ -107,8 +121,8 @@ mean.benmut.add <- d_fx_propBen %>% filter(model == "Add") %>%
             upperCL = meanPropBen + CIPropBen,
             lowerCL = meanPropBen - CIPropBen)
 
-br.benmut.km <- betareg(propBen_adj ~ mutType, d_fx_propBen %>% filter(model == "ODE"))
-br.benmut.kp <- betareg(propBen_adj ~ mutType, d_fx_propBen %>% filter(model == "K"))
+br.benmut.km <- betareg(propBen_adj ~ mutType, data = d_fx_propBen, subset = model == "ODE")
+br.benmut.kp <- betareg(propBen_adj ~ mutType, data = d_fx_propBen, subset = model == "K")
 
 em.benmut.km <- emmeans(br.benmut.km, ~ mutType)
 em.benmut.kp <- emmeans(br.benmut.kp, ~ mutType)
@@ -134,9 +148,7 @@ d_fx_ben$mutType <- factor(d_fx_ben$mutType)
 
 d_fx_ben_sum <- d_fx_ben %>%
   group_by(model, mutType) %>%
-  summarise(meanCountBen = mean(countBen),
-            CICountBen = CI(countBen),
-            meanBen = mean(s),
+  summarise(meanBen = mean(s),
             CIBen = CI(s))
 
 ggplot(d_fx_ben %>% 
@@ -169,6 +181,8 @@ ggsave("plt_ben_muts_s.png", plt_ben_muts_s, width = 6, height = 4, device = png
 summary(gls.s.km <- gls(s ~ mutType, (d_fx_ben %>% filter(model == "ODE")), 
                         weights = varIdent(form = ~ 1 | mutType)))
 
+plot(gls.s.km)
+
 # No difference between alpha and beta in effect size, so can just calc the mean
 # like in the additive model across both alpha and beta
 mean.s.km <- d_fx_ben %>% filter(model == "ODE") %>%
@@ -181,6 +195,8 @@ mean.s.km <- d_fx_ben %>% filter(model == "ODE") %>%
 summary(gls.s.kp <- gls(s ~ mutType, (d_fx_ben %>% filter(model == "K")), 
                         weights = 
                           varIdent(form = ~ 1 | mutType)))
+
+plot(gls.s.kp)
 
 em.s.kp <- emmeans(gls.s.kp, ~ mutType)
 
