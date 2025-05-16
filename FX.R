@@ -70,7 +70,8 @@ ggplot(d_fx_propBen %>%
                       nloci_title = "Number of loci",
                       tau_title = "Mutational effect size variance"),
              aes(x = mutType, y = meanPropBen, group = model), colour = "black",
-             shape = 3, size = 2, position = position_dodge(0.9)) +
+             shape = 3, size = 2, position = position_dodge(0.9),
+             stroke = 1) +
   scale_x_discrete(labels = parse(text = mutTypes_vec)) +
   labs(x = "Molecular component", 
        y = "Proportion of beneficial mutations",
@@ -163,7 +164,8 @@ ggplot(d_fx_ben %>%
                       nloci_title = "Number of loci",
                       tau_title = "Mutational effect size variance"),
              aes(x = mutType, y = meanBen, group = model), colour = "black",
-             shape = 3, size = 2, position = position_dodge(0.9)) +
+             shape = 3, size = 2, position = position_dodge(0.9),
+             stroke = 1) +
   scale_x_discrete(labels = parse(text = mutTypes_vec)) +
   labs(x = "Molecular component", 
        y = "Average fitness effect\nof beneficial mutations",

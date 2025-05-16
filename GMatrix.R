@@ -30,7 +30,8 @@ ggplot(d_h2 %>% filter(isAdapted) %>%
                       tau_title = "Mutational effect size variance") %>%
                filter(method == "mkr", r %in% r_subsample, tau == 0.0125),
              aes(x = optPerc, y = meanVAZ, group = model), colour = "black",
-             shape = 3, size = 2, position = position_dodge(0.9)) +
+             shape = 3, size = 2, position = position_dodge(0.9),
+             stroke = 1) +
   coord_cartesian(ylim = c(0, 0.2)) +
   labs(x = "Progress to the optimum", 
        y = TeX("Additive variance $(V_A)$"),
@@ -168,7 +169,8 @@ ggplot(d_h2_deltaVA %>% filter(isAdapted) %>%
                       tau_title = "Mutational effect size variance") %>%
                filter(method == "mkr", r %in% r_subsample, tau == 0.0125),
              aes(x = model, y = meanDeltaVA, group = model), colour = "black",
-             shape = 3, size = 2, position = position_dodge(0.9)) +
+             shape = 3, size = 2, position = position_dodge(0.9),
+             stroke = 1) +
   labs(x = "Model", 
        y = TeX("Change in additive variance $(\\Delta V_A)$"),
        colour = "Model") +
@@ -295,7 +297,7 @@ phylo <- full_join(as.phylo(phylo), id, by = "label")
 
 clus_palette <- paletteer_d("ggsci::nrc_npg", 3)
 
-ggtree(phylo, aes(colour = as.factor(model)), layout="equal_angle") +
+ggtree(phylo, aes(colour = as.factor(model)), open.angle = 90, layout="equal_angle") +
   geom_tippoint(size = 2) +
   scale_colour_manual(values = paletteer_d("nationalparkcolors::Everglades", 3, direction = -1)[2:3],
                       labels = c("K+", "K-"), breaks = c("K", "ODE")) +
@@ -307,9 +309,27 @@ ggtree(phylo, aes(colour = as.factor(model)), layout="equal_angle") +
   guides(colour = guide_legend(override.aes = list(shape=16, size = 5,
                                                    linetype = 0))) -> tree_full
 
-tree_full
+
+leg <- get_legend(tree_full + 
+                    theme(legend.position = "bottom",
+                          legend.box = "vertical", 
+                          legend.margin = margin(-5, 0, 0, 0),
+                          text = element_text(size = 20)))
+
+tree_full2 <- tree_full + theme(legend.position = "none",
+                                legend.box = "vertical", 
+                                legend.margin = margin(-5, 0, 0, 0),
+                                text = element_text(size = 14))
+
+
+tree_ggplt <- ggplotify::as.ggplot(tree_full2, angle = 90)
+
+plot_grid(tree_ggplt,
+          leg, 
+          nrow = 2, rel_heights = c(1, 0.1))
+
 ggsave("plt_tree_gmatrix_full_noZ.png", device = png, bg = "white",
-       width = 7/2, height = 9/2)
+       width = 7, height = 7)
 
 
 # Evolvability metrics
@@ -360,7 +380,8 @@ ggplot(d_ecr %>%
   geom_point(data = d_ecr_sum %>% ungroup() %>%
                mutate(r_title = "Recombination rate (log10)"),
              aes(x = optPerc, y = cev_mean, group = model), colour = "black",
-             shape = 3, size = 2, position = position_dodge(0.9)) +
+             shape = 3, size = 2, position = position_dodge(0.9),
+             stroke = 1) +
   scale_colour_manual(values = paletteer_d("nationalparkcolors::Everglades", 3, direction = -1)[2:3],
                       labels = c("K+", "K-"), breaks = c("K", "ODE")) +
   labs(x = "Progress to the optimum", y = "Mean conditional evolvability",
@@ -381,7 +402,8 @@ ggplot(d_ecr %>%
   geom_point(data = d_ecr_sum %>% ungroup() %>%
                mutate(r_title = "Recombination rate (log10)"),
              aes(x = optPerc, y = res_mean, group = model), colour = "black",
-             shape = 3, size = 2, position = position_dodge(0.9)) +
+             shape = 3, size = 2, position = position_dodge(0.9),
+             stroke = 1) +
   scale_colour_manual(values = paletteer_d("nationalparkcolors::Everglades", 3, direction = -1)[2:3],
                       labels = c("K+", "K-"), breaks = c("K", "ODE")) +
   labs(x = "Progress to the optimum", y = "Mean respondability",
@@ -402,7 +424,8 @@ ggplot(d_ecr %>%
   geom_point(data = d_ecr_sum %>% ungroup() %>%
                mutate(r_title = "Recombination rate (log10)"),
              aes(x = optPerc, y = aut_mean, group = model), colour = "black",
-             shape = 3, size = 2, position = position_dodge(0.9)) +
+             shape = 3, size = 2, position = position_dodge(0.9),
+             stroke = 1) +
   scale_colour_manual(values = paletteer_d("nationalparkcolors::Everglades", 3, direction = -1)[2:3],
                       labels = c("K+", "K-"), breaks = c("K", "ODE")) +
   scale_x_discrete(labels = c("25%", "50%", "75%", "100%")) +
@@ -423,7 +446,8 @@ ggplot(d_ecr %>%
   geom_point(data = d_ecr_sum %>% ungroup() %>%
                mutate(r_title = "Recombination rate (log10)"),
              aes(x = optPerc, y = ev_mean, group = model), colour = "black",
-             shape = 3, size = 2, position = position_dodge(0.9)) +
+             shape = 3, size = 2, position = position_dodge(0.9),
+             stroke = 1) +
   scale_colour_manual(values = paletteer_d("nationalparkcolors::Everglades", 3, direction = -1)[2:3],
                       labels = c("K+", "K-"), breaks = c("K", "ODE")) +
   scale_x_discrete(labels = c("25%", "50%", "75%", "100%")) +
