@@ -17,7 +17,9 @@ d_epi_means_plt <- d_epi_means_plt %>%
 # Average over nloci, r, and optPerc (no effect)
 d_epi_means_plt %>%
   group_by(model) %>%
-  summarise(minEW = mean(minEW),
+  summarise(meanEW = mean(meanEW),
+            CIEW = mean((sdEW / sqrt(count)) * qnorm(0.975)),
+            minEW = mean(minEW),
             q025EW = mean(q025EW),
             q25EW = mean(q25EW),
             q50EW = mean(q50EW),
@@ -194,3 +196,6 @@ ggsave("plt_ew_KXZ.png", width = 9, height = 4, device = png)
 # Table of results
 d_epi_means_pc_plt_sum %>% select(model, molComp, minEW, q50EW, maxEW, meanFreqAboveDB, n)
 d_epi_means_plt2 %>% select(model, minEW, q50EW, maxEW, meanFreqAboveDB, n)
+
+# Mean
+d_epi_means_plt2 %>% select(model, meanEW, CIEW)
