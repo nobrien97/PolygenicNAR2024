@@ -1,6 +1,6 @@
 # Analysis of effect sizes for each molecular component
 
-d_fx <- data.table::fread(paste0(DATA_PATH, "d_fx_new.csv"), header = F, 
+d_fx <- data.table::fread(paste0(DATA_PATH, "d_fx.csv"), header = F, 
                           sep = ",", colClasses = c("integer", "factor", "factor",
                                                     "factor", "character", "numeric"), 
                           col.names = c("gen", "seed", "modelindex", 
@@ -100,7 +100,7 @@ plot(density(d_fx_propBen[d_fx_propBen$mutType != 5,]$propBen))
 plot(density(d_fx_propBen[d_fx_propBen$mutType == 5,]$propBen))
 
 # beta regression for everything
-br.benmut <- betareg(propBen_adj ~ mutType, d_fx_propBen)
+br.benmut <- betareg(propBen_adj ~ modelMutType, d_fx_propBen)
 
 summary(br.benmut)
 plot(br.benmut)
@@ -109,7 +109,15 @@ saveRDS(br.benmut, "betareg_benmut.RDS")
 br.benmut <- readRDS(paste0(DATA_PATH, "betareg_benmut.RDS"))
 
 #anova(br.benmut)
-#em.benmut <- emmeans(br.benmut, ~ modelMutType)
+em.benmut <- emmeans(br.benmut, ~ modelMutType)
+
+pairs(em.benmut, simple = "modelMutType")
+plot(em.benmut, comparisons = T)
+emmip(em.benmut,  ~ modelMutType)
+
+# Differences between models (apart from KZ) range from <1% to ~5%
+# KZ is about 50% change, almost never beneficial
+
 
 
 # Calculate beta regression separately for each model:
@@ -128,18 +136,15 @@ br.benmut.kp <- betareg(propBen_adj ~ mutType, data = d_fx_propBen, subset = mod
 em.benmut.km <- emmeans(br.benmut.km, ~ mutType)
 em.benmut.kp <- emmeans(br.benmut.kp, ~ mutType)
 
+# Were beneficial mutations more likely in some molecular components than others?
 joint_tests(em.benmut.km)
 joint_tests(em.benmut.kp)
 
+# Which ones in particular?
 xtable(em.benmut.km)
 xtable(em.benmut.kp)
-
-pairs(em.benmut, simple = "modelMutType")
-plot(em.benmut, comparisons = T)
-emmip(em.benmut,  ~ modelMutType)
-
-# Differences between models (apart from KZ) range from <1% to ~5%
-# KZ is about 50% change, almost never beneficial
+# And the additive model
+mean.benmut.add
 
 # What about effect size: if K_Z has very large effects, generating that variation
 # could be important
