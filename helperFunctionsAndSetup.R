@@ -27,6 +27,8 @@ library(stargazer)
 library(Rcpp)
 library(dendextend)
 library(sciscales)
+library(grid)
+library(gridExtra)
 
 # Increasing recombination leads to relatively linear response with some
 # thresholds at -10, -5, -1
@@ -880,6 +882,7 @@ GetMatrixIDs <- function(matList) {
 }
 
 # Calculate evolvability metrics (Hansen and Houle 2008)
+# Code adapted from Puentes et al. 2016 (http://dx.doi.org/10.5061/dryad.6523g)
 CalcECRA <- function(matList, id, noZ = F) {
   require(matrixcalc)
   require(Matrix)
