@@ -52,11 +52,13 @@ d_fx_propBen <- d_fx %>%
 # Set muttype for additive to a unique id
 d_fx_propBen[d_fx_propBen$model == "Add", "mutType"] <- "2"
 
+# Summarise
 d_fx_propBen_sum <- d_fx_propBen %>%
   group_by(model, mutType, r) %>%
   summarise(meanPropBen = mean(propBen),
             CIPropBen = CI(propBen))
 
+# Proportion of beneficial mutations per molecular component - Fig 8 
 ggplot(d_fx_propBen %>% 
          ungroup() %>%
          mutate(r_title = "Recombination rate (log10)",
@@ -82,7 +84,7 @@ ggplot(d_fx_propBen %>%
   theme(text = element_text(size = 14),
         legend.position = "bottom") -> plt_propben_muts_wholewalk
 plt_propben_muts_wholewalk
-ggsave("plt_propben_muts_wholewalk.png", plt_propben_muts_wholewalk, 
+ggsave("plt_propben_muts_wholewalk.png", plt_propben_muts_wholewalk, dpi = 350,
        width = 10, height = 4, device = png)
 
 # beta regression
@@ -157,6 +159,7 @@ d_fx_ben_sum <- d_fx_ben %>%
   summarise(meanBen = mean(s),
             CIBen = CI(s))
 
+# Average effect size of mutations per model/molecular component - Fig. 9
 ggplot(d_fx_ben %>% 
          ungroup() %>%
          mutate(r_title = "Recombination rate (log10)",
@@ -181,7 +184,9 @@ ggplot(d_fx_ben %>%
   theme(text = element_text(size = 14),
         legend.position = "bottom") -> plt_ben_muts_s
 plt_ben_muts_s
-ggsave("plt_ben_muts_s.png", plt_ben_muts_s, width = 6, height = 4, device = png)
+ggsave("plt_ben_muts_s.png", plt_ben_muts_s, dpi = 350,
+       width = 6, height = 4, device = png)
+
 
 # GLS - fitness effect of beneficial mutations
 
@@ -199,6 +204,7 @@ mean.s.km <- d_fx_ben %>% filter(model == "ODE") %>%
             upperCL = meanS + CIS,
             lowerCL = meanS - CIS)
 
+# Per model gls
 d_fx_ben_km <- d_fx_ben %>% select(-optPerc) %>% filter(model == "ODE") %>% distinct()
 summary(gls.s.km <- gls(s ~ mutType, d_fx_ben_km, 
                         weights = varIdent(form = ~ 1 | mutType)))
@@ -210,8 +216,10 @@ summary(gls.s.kp <- gls(s ~ mutType, d_fx_ben_k,
 
 plot(gls.s.kp)
 
+# Marginal means
 em.s.kp <- emmeans(gls.s.kp, ~mutType, mode = "appx-satterthwaite")
 
+# Model/mutType anova
 anova(gls.s.kp)
 anova(gls.s.km)
 

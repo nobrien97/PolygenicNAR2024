@@ -15,7 +15,7 @@ d_h2_sum <- d_h2 %>%
 d_h2_sum$model <- as.factor(d_h2_sum$model)
 
 # Additive variance
-# Small effects as separate figure
+# Small effects as separate figure - Fig 2
 ggplot(d_h2 %>% filter(isAdapted) %>%
          mutate(r_title = "Recombination rate (log10)",
                 nloci_title = "Number of loci",
@@ -44,7 +44,7 @@ ggplot(d_h2 %>% filter(isAdapted) %>%
   theme(text = element_text(size = 14),
         legend.position = "bottom")
 ggsave("plt_va_sml.png", device = png, bg = "white",
-       width = 560*4, height = (980*4)/3, units = "px")
+       width = 560*4, height = (980*4)/3, dpi = 350, units = "px")
 
 # Larger effects
 ggplot(d_h2 %>% filter(isAdapted) %>%
@@ -297,6 +297,7 @@ phylo <- full_join(as.phylo(phylo), id, by = "label")
 
 clus_palette <- paletteer_d("ggsci::nrc_npg", 3)
 
+# Tree: Fig. 5
 ggtree(phylo, aes(colour = as.factor(model)), open.angle = 90, layout="equal_angle") +
   geom_tippoint(size = 2) +
   scale_colour_manual(values = paletteer_d("nationalparkcolors::Everglades", 3, direction = -1)[2:3],
@@ -314,14 +315,13 @@ leg <- get_legend(tree_full +
                     theme(legend.position = "bottom",
                           legend.box = "vertical", 
                           legend.margin = margin(-5, 0, 0, 0),
-                          text = element_text(size = 20)))
+                          text = element_text(size = 20))) # Increase legend text size
 
 tree_full2 <- tree_full + theme(legend.position = "none",
                                 legend.box = "vertical", 
-                                legend.margin = margin(-5, 0, 0, 0),
-                                text = element_text(size = 14))
+                                legend.margin = margin(-5, 0, 0, 0))
 
-
+# Rotate by 90 degrees
 tree_ggplt <- ggplotify::as.ggplot(tree_full2, angle = 90)
 
 plot_grid(tree_ggplt,
@@ -329,7 +329,7 @@ plot_grid(tree_ggplt,
           nrow = 2, rel_heights = c(1, 0.1))
 
 ggsave("plt_tree_gmatrix_full_noZ.png", device = png, bg = "white",
-       width = 7, height = 7)
+       dpi = 350, width = 7, height = 7)
 
 
 # Evolvability metrics
@@ -370,7 +370,7 @@ d_ecr_sum <- d_ecr %>%
   group_by(optPerc, model, r) %>%
   summarise_if(is.numeric, list(mean = mean, se = se))
 
-
+# Evolvability: Fig. 6
 ggplot(d_ecr %>%
          mutate(r_title = "Recombination rate (log10)",
                 nloci_title = "Number of loci"), 
@@ -470,7 +470,7 @@ plt_evol <- plot_grid(plt_ev + theme(legend.position = "none"),
 plt_evol <- plot_grid(plt_evol,
                       leg, nrow = 2, rel_heights = c(1, 0.05))
 plt_evol
-ggsave("plt_evol_noZ.png", device = png, bg = "white",
+ggsave("plt_evol_noZ.png", device = png, bg = "white", dpi = 350,
        width = 10, height = 7)
 
 # Compare K+ and K- among recombination rates 
@@ -610,7 +610,7 @@ bootPCASim_sum <- bootPCASim %>%
   summarise(meanPCASim = mean(PCASim),
                    ciPCASim = CI(PCASim))
 
-
+# PCA similarity: Fig. 7
 ggplot(bootPCASim_sum, aes(
   x = as.factor(r1), y = as.factor(r2)
 )) +
@@ -626,7 +626,8 @@ ggplot(bootPCASim_sum, aes(
        fill = "PCA Similarity") +
   theme(text = element_text(size = 12), legend.position = "bottom") +
   guides(fill = guide_colorbar(barwidth = 10))
-ggsave("PCASim_r_modelCombo_noZ.png", device = png, width = 7, height = 5)
+ggsave("PCASim_r_modelCombo_noZ.png", device = png, dpi = 350,
+       width = 7, height = 5)
 
 # beta regression
 # Distributions

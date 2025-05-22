@@ -154,7 +154,7 @@ ggplot(d_ld_freq_dist_hist %>% mutate(col = bins[as.numeric(str_extract(col, "[0
 plt_ld_freq_sml
 ggsave("plt_ld_freq_sml.png", device = png, width = 9, height = 4)
 
-# Grid figure
+# Grid figure: Fig. 4
 leg <- get_legend(plt_ld_freq_sml)
 
 plt_ld_sml_com <- plot_grid(plt_ld_sml + theme(legend.position = "none"),
@@ -162,5 +162,5 @@ plt_ld_sml_com <- plot_grid(plt_ld_sml + theme(legend.position = "none"),
                             ncol = 1, labels = "AUTO")
 
 plt_ld_sml_com
-ggsave("plt_ld_com.png", device = png, bg = "white",
+ggsave("plt_ld_com.png", device = png, bg = "white", dpi = 350,
        width = 9, height = 8)

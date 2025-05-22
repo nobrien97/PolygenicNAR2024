@@ -38,7 +38,7 @@ d_adapted_sum <- d_qg %>%
             meanPhenovar = mean(phenovar),
             sdPhenovar = sd(phenovar))
 
-# Small fx only
+# Small fx only: Fig. 1
 ggplot(d_adapted_sum %>% filter(tau == 0.0125, r %in% r_subsample),
        aes(x = gen, y = meanPhenomean, colour = model),
        group = as.factor(seed)) +
@@ -62,7 +62,7 @@ ggplot(d_adapted_sum %>% filter(tau == 0.0125, r %in% r_subsample),
   theme_bw() +
   theme(legend.position = "bottom", text = element_text(size = 12),
         panel.spacing = unit(0.75, "lines")) 
-ggsave("plt_adapt_smlfx.png", width = 12, height = 5, device = png)
+ggsave("plt_adapt_smlfx.png", width = 12, height = 5, device = png, dpi = 350)
 
 # Time to adaptation
 d_adaptTime <- d_qg %>% filter(gen >= 49500) %>%

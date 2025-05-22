@@ -167,30 +167,13 @@ ggplot(d_epi_means_pc_plt_sum %>% filter(molCompLabel %in% KXZ_comparisons) %>%
 plt_freq_pc_db_KXZ
 ggsave("plt_ew_freq_pc_KXZ.png", width = 5, height = 5, device = png)
 
-
-# Combined figure
-## Shared Y axis
-y.grob <- textGrob("Proportion of samples with non-negligible fitness epistasis", 
-                   gp=gpar(fontsize=14), rot=90)
-
-plt_ew <- plot_grid(plt_ew_freq_db + theme(plot.margin = margin(5.5, 150, 5.5, 150),
-                                           axis.title.y = element_blank(),
-                                             axis.title.x = element_blank()),
-                    plt_freq_pc_db + theme(axis.title.y = element_blank()),
-                    nrow = 2, rel_heights = c(0.25, 1),
-                    labels = "AUTO")
-
-g <- arrangeGrob(plt_ew, left = y.grob)
-
-ggsave("plt_ew_molComp.png", g, width = 7, height = 10, device = png)
-
-# KXZ only figure
+# Combined figure - Fig 3
 plt_ew <- plot_grid(plt_ew_freq_db,
                     plt_freq_pc_db_KXZ,
                     ncol = 2,
                     labels = "AUTO")
 plt_ew
-ggsave("plt_ew_KXZ.png", width = 9, height = 4, device = png)
+ggsave("plt_ew_KXZ.png", dpi = 350, width = 9, height = 4, device = png)
 
 
 # Table of results
