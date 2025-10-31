@@ -30,6 +30,21 @@ d_epi_means_plt %>%
             CIFreqAboveDB = CI(freqAboveDB),
             n = sum(count)) -> d_epi_means_plt2
 
+# Plot box plots of fitness epistasis
+ggplot(d_epi_means_plt2, 
+       aes(x = model, colour = model)) +
+  geom_boxplot(aes(ymin = q025EW, lower = q25EW, middle = q50EW, 
+                   upper = q75EW, ymax = q975EW), stat = "identity") +
+  labs(x = "Model", y = TeX("Fitness epistasis ($\\epsilon_w$)")) +
+  theme_bw() +
+  #coord_cartesian(ylim = c(-1e-5, 1e-5)) +
+  scale_colour_manual(values = paletteer_d("nationalparkcolors::Everglades", 3, direction = -1),
+                      guide = "none") +
+  scale_x_discrete(labels = c("Additive", "K+", "K-")) +
+  theme(text = element_text(size = 12), legend.position = "none") -> plt_ew_db
+plt_ew_db
+
+# Plot % above drift barrier
 ggplot(d_epi_means_plt2 %>% 
          mutate(r_title = "Recombination rate (log10)",
                 nloci_title = "Number of loci",
@@ -167,13 +182,32 @@ ggplot(d_epi_means_pc_plt_sum %>% filter(molCompLabel %in% KXZ_comparisons) %>%
 plt_freq_pc_db_KXZ
 ggsave("plt_ew_freq_pc_KXZ.png", width = 5, height = 5, device = png)
 
+# Plot boxplot of estimates per comp
+# Per-component box plot
+ggplot(d_epi_means_pc_plt_sum %>% filter(molCompLabel %in% KXZ_comparisons), 
+       aes(x = molCompLabel, colour = model)) +
+  geom_boxplot(aes(ymin = q025EW, lower = q25EW, middle = q50EW, 
+                   upper = q75EW, ymax = q975EW), stat = "identity") +
+  labs(x = "Model", y = TeX("Fitness epistasis ($\\epsilon_w$)")) +
+  theme_bw() +
+  scale_x_discrete(labels = parse(text = KXZ_comparisons)) +
+  #coord_cartesian(ylim = c(-1e-5, 1e-5)) +
+  scale_colour_manual(values = paletteer_d("nationalparkcolors::Everglades", 3, 
+                                           direction = -1)[2:3],
+                      guide = "none") +
+  theme(text = element_text(size = 12), legend.position = "none") -> plt_ew_pc_db_KXZ
+plt_ew_pc_db_KXZ
+
+
+
+
 # Combined figure - Fig 3
-plt_ew <- plot_grid(plt_ew_freq_db,
-                    plt_freq_pc_db_KXZ,
+plt_ew <- plot_grid(plt_ew_db, plt_ew_pc_db_KXZ,
+                    plt_ew_freq_db, plt_freq_pc_db_KXZ,
                     ncol = 2,
                     labels = "AUTO")
 plt_ew
-ggsave("plt_ew_KXZ.png", dpi = 350, width = 9, height = 4, device = png)
+ggsave("plt_ew_KXZ.png", dpi = 350, width = 9, height = 7, device = png)
 
 
 # Table of results
