@@ -115,22 +115,31 @@ ggsave("plt_adapt_permod.png", width = 9, height = 4.5, bg = "white",
 
 # Burn-in evolution of molecular components vs phenotype (Fig. SY)
 d_qg_burnin <- d_qg %>%
-  filter(gen <= 50000, tau == 0.0125, model == "K", r %in% r_subsample) %>%
+  filter(gen <= 50000, tau == 0.0125, nloci == 1024, model == "K", r %in% r_subsample) %>%
   select(gen, seed, r, phenomean, aZ, bZ, KZ, KXZ) %>%
   pivot_longer(cols = 4:8, names_to = "trait", values_to = "meanTrait")
 
+burnin_labels <- c(
+  "aZ" = TeX("$\\alpha_Z$", output = "character"),
+  "bZ" = TeX("$\\beta_Z$", output = "character"),
+  "KXZ" = TeX("$K_{XZ}$", output = "character"),
+  "KZ" = TeX("$K_Z$", output = "character"),
+  "phenomean" = TeX("$Z$", output = "character")
+)
+
 ggplot(d_qg_burnin,
-       aes(x = gen, y = meanTrait, colour = as.factor(log10(r)),
-           group = factor(seed))) +
-  facet_grid(as.factor(log10(r)) ~ trait) +
-  geom_line() +
-  geom_hline(yintercept = 1, linetype = "dashed") +
-  scale_colour_manual(values = c("#41476BFF", "#9E6374FF", "#EFBC82FF")) +
-  labs(x = "Generation", y = "Mean phenotype/molecular component",
-       colour = "Recombination rate") +
+       aes(x = gen, y = meanTrait,
+           group = interaction(r, seed))) +
+  facet_nested("Trait/Molecular component" + trait ~ .,
+               labeller = labeller(trait = as_labeller(burnin_labels, default = label_parsed))) +
+  geom_line(alpha = 0.8, colour = "grey") +
+  scale_x_continuous(labels = scales::comma) +
+  labs(x = "Generation", y = "Mean phenotype/molecular component value") +
   theme_bw() +
   theme(legend.position = "bottom", text = element_text(size = 12),
         panel.spacing = unit(0.75, "lines"))
+ggsave("plt_sysdrift.png", width = 5, height = 6, bg = "white",
+       device = png, dpi = 350)
 
 
 
