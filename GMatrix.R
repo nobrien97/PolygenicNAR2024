@@ -5,7 +5,7 @@ d_h2 <- read.csv(paste0(DATA_PATH, "d_VA_Z.csv"))
 d_h2 <- d_h2[,-1]
 
 # summarise
-d_h2_sum <- d_h2 %>% 
+d_h2_sum <- d_h2 %>%
   filter(r %in% r_subsample) %>%
   group_by(optPerc, model, tau, r, method, isAdapted) %>%
   summarise(meanH2Z = mean(h2_Z, na.rm = T),
@@ -33,7 +33,7 @@ ggplot(d_h2 %>% filter(isAdapted) %>%
              shape = 3, size = 2, position = position_dodge(0.9),
              stroke = 1) +
   coord_cartesian(ylim = c(0, 0.2)) +
-  labs(x = "Progress to the optimum", 
+  labs(x = "Progress to the optimum",
        y = TeX("Additive variance $(V_A)$"),
        colour = "Model") +
   scale_x_discrete(labels = c("25%", "50%", "75%", "100%")) +
@@ -63,7 +63,7 @@ ggplot(d_h2 %>% filter(isAdapted) %>%
              aes(x = optPerc, y = meanVAZ, group = model), colour = "black",
              shape = 3, size = 2, position = position_dodge(0.9)) +
   coord_cartesian(ylim = c(0, 0.2)) +
-  labs(x = "Progress to the optimum", 
+  labs(x = "Progress to the optimum",
        y = TeX("Additive variance $(V_A)$"),
        colour = "Model") +
   scale_x_discrete(labels = c("25%", "50%", "75%", "100%")) +
@@ -90,7 +90,7 @@ ggplot(d_h2 %>% filter(isAdapted) %>%
              aes(x = optPerc, y = meanVAZ, group = model), colour = "black",
              shape = 3, size = 2, position = position_dodge(0.9)) +
   coord_cartesian(ylim = c(0, 0.7)) +
-  labs(x = "Progress to the optimum", 
+  labs(x = "Progress to the optimum",
        y = TeX("Additive variance $(V_A)$"),
        colour = "Model") +
   scale_x_discrete(labels = c("25%", "50%", "75%", "100%")) +
@@ -118,7 +118,7 @@ ggplot(d_h2 %>% filter(isAdapted) %>%
              shape = 3, size = 2, position = position_dodge(0.9)) +
   coord_cartesian(ylim = c(0, 2.5)) +
   scale_x_discrete(labels = c("25%", "50%", "75%", "100%")) +
-  labs(x = "Progress to the optimum", 
+  labs(x = "Progress to the optimum",
        y = TeX("Additive variance $(V_A)$"),
        colour = "Model") +
   scale_colour_manual(values = paletteer_d("nationalparkcolors::Everglades", 3, direction = -1),
@@ -171,11 +171,11 @@ ggplot(d_h2_deltaVA %>% filter(isAdapted) %>%
              aes(x = model, y = meanDeltaVA, group = model), colour = "black",
              shape = 3, size = 2, position = position_dodge(0.9),
              stroke = 1) +
-  labs(x = "Model", 
+  labs(x = "Model",
        y = TeX("Change in additive variance $(\\Delta V_A)$"),
        colour = "Model") +
   scale_x_discrete(labels = c("Additive", "K+", "K-")) +
-  scale_colour_manual(values = paletteer_d("nationalparkcolors::Everglades", 
+  scale_colour_manual(values = paletteer_d("nationalparkcolors::Everglades",
                                            3, direction = -1),
                       guide = "none",
                       labels = c("Additive", "K+", "K-")) +
@@ -190,7 +190,7 @@ ggsave("plt_deltaVA.png", device = png, width = 9, height = 4)
 # molecular components scaled
 d_h2 <- read.csv(paste0(DATA_PATH, "d_VA_noZ.csv"))
 
-d_h2_sum <- d_h2 %>% 
+d_h2_sum <- d_h2 %>%
   filter(r %in% r_subsample) %>%
   group_by(optPerc, model, tau, r, method, isAdapted) %>%
   summarise(meanH2a = mean(h2_a, na.rm = T),
@@ -259,7 +259,7 @@ phylo <- as_tibble(phylo)
 phylo$label <- as.numeric(substring(phylo$label, 8))
 phylo <- as.phylo(phylo)
 
-id <- rbindlist(cov_matrix_modelindex, 
+id <- rbindlist(cov_matrix_modelindex,
                 fill = T)
 id$label <- as.character(1:nrow(id))
 id$modelindex <- as.factor(id$modelindex)
@@ -303,29 +303,29 @@ ggtree(phylo, aes(colour = as.factor(model)), open.angle = 90, layout="equal_ang
   scale_colour_manual(values = paletteer_d("nationalparkcolors::Everglades", 3, direction = -1)[2:3],
                       labels = c("K+", "K-"), breaks = c("K", "ODE")) +
   labs(colour = "Model") +
-  theme(legend.position = "bottom", 
-        legend.box = "vertical", 
+  theme(legend.position = "bottom",
+        legend.box = "vertical",
         legend.margin = margin(-5, 0, 0, 0),
         text = element_text(size = 14)) +
   guides(colour = guide_legend(override.aes = list(shape=16, size = 5,
                                                    linetype = 0))) -> tree_full
 
 
-leg <- get_legend(tree_full + 
+leg <- get_legend(tree_full +
                     theme(legend.position = "bottom",
-                          legend.box = "vertical", 
+                          legend.box = "vertical",
                           legend.margin = margin(-5, 0, 0, 0),
                           text = element_text(size = 20))) # Increase legend text size
 
 tree_full2 <- tree_full + theme(legend.position = "none",
-                                legend.box = "vertical", 
+                                legend.box = "vertical",
                                 legend.margin = margin(-5, 0, 0, 0))
 
 # Rotate by 90 degrees
 tree_ggplt <- ggplotify::as.ggplot(tree_full2, angle = 90)
 
 plot_grid(tree_ggplt,
-          leg, 
+          leg,
           nrow = 2, rel_heights = c(1, 0.1))
 
 ggsave("plt_tree_gmatrix_full_noZ.png", device = png, bg = "white",
@@ -339,7 +339,7 @@ h2_pd <- lapply(h2_mat, function(x) {
 })
 
 
-d_ecr <- CalcECRA(h2_pd, 
+d_ecr <- CalcECRA(h2_pd,
                   id, noZ = T)
 d_ecr <- AddCombosToDF(d_ecr)
 
@@ -354,9 +354,9 @@ outliers <- lofscores > threshold
 plot(density(lofscores[lofscores < 4]))
 
 plot(lofscores, pch = 1, col = ifelse(outliers, "red", "blue"),
-     main = "LOF Outlier Detection (k = 15)", xlab = "Data Point", 
+     main = "LOF Outlier Detection (k = 15)", xlab = "Data Point",
      ylab = "LOF Score")
-legend("topright", legend = c("Outlier", "Inlier"), col = c("red", "blue"), 
+legend("topright", legend = c("Outlier", "Inlier"), col = c("red", "blue"),
        pch = 1)
 boxplot(d_ecr[!outliers,]$cev)
 
@@ -373,7 +373,7 @@ d_ecr_sum <- d_ecr %>%
 # Evolvability: Fig. 6
 ggplot(d_ecr %>%
          mutate(r_title = "Recombination rate (log10)",
-                nloci_title = "Number of loci"), 
+                nloci_title = "Number of loci"),
        aes(x = optPerc, y = cev, colour = model)) +
   facet_nested(r_title + log10(r)~.) +
   geom_quasirandom(shape = 1, dodge.width = 0.9, na.rm = F) +
@@ -388,14 +388,14 @@ ggplot(d_ecr %>%
        colour = "Model") +
   scale_x_discrete(labels = c("25%", "50%", "75%", "100%")) +
   theme_bw() +
-  theme(legend.position = "bottom", 
-        legend.box = "vertical", 
+  theme(legend.position = "bottom",
+        legend.box = "vertical",
         legend.margin = margin(-5, 0, 0, 0),
         text = element_text(size = 12)) -> plt_cev
 
 ggplot(d_ecr %>%
          mutate(r_title = "Recombination rate (log10)",
-                nloci_title = "Number of loci"), 
+                nloci_title = "Number of loci"),
        aes(x = optPerc, y = res, colour = model)) +
   facet_nested(r_title + log10(r)~.) +
   geom_quasirandom(shape = 1, dodge.width = 0.9, na.rm = F) +
@@ -410,14 +410,14 @@ ggplot(d_ecr %>%
        colour = "Model") +
   scale_x_discrete(labels = c("25%", "50%", "75%", "100%")) +
   theme_bw() +
-  theme(legend.position = "bottom", 
-        legend.box = "vertical", 
+  theme(legend.position = "bottom",
+        legend.box = "vertical",
         legend.margin = margin(-5, 0, 0, 0),
         text = element_text(size = 12)) -> plt_res
 
 ggplot(d_ecr %>%
          mutate(r_title = "Recombination rate (log10)",
-                nloci_title = "Number of loci"), 
+                nloci_title = "Number of loci"),
        aes(x = optPerc, y = aut, colour = model)) +
   facet_nested(r_title + log10(r)~.) +
   geom_quasirandom(shape = 1, dodge.width = 0.9, na.rm = F) +
@@ -432,14 +432,14 @@ ggplot(d_ecr %>%
   labs(x = "Progress to the optimum", y = "Mean autonomy",
        colour = "Model") +
   theme_bw() +
-  theme(legend.position = "bottom", 
-        legend.box = "vertical", 
+  theme(legend.position = "bottom",
+        legend.box = "vertical",
         legend.margin = margin(-5, 0, 0, 0),
         text = element_text(size = 12)) -> plt_aut
 
 ggplot(d_ecr %>%
          mutate(r_title = "Recombination rate (log10)",
-                nloci_title = "Number of loci"), 
+                nloci_title = "Number of loci"),
        aes(x = optPerc, y = ev, colour = model)) +
   facet_nested(r_title + log10(r)~.) +
   geom_quasirandom(shape = 1, dodge.width = 0.9, na.rm = F) +
@@ -454,8 +454,8 @@ ggplot(d_ecr %>%
   labs(x = "Progress to the optimum", y = "Mean evolvability",
        colour = "Model") +
   theme_bw() +
-  theme(legend.position = "bottom", 
-        legend.box = "vertical", 
+  theme(legend.position = "bottom",
+        legend.box = "vertical",
         legend.margin = margin(-5, 0, 0, 0),
         text = element_text(size = 12)) -> plt_ev
 
@@ -473,14 +473,14 @@ plt_evol
 ggsave("plt_evol_noZ.png", device = png, bg = "white", dpi = 350,
        width = 10, height = 7)
 
-# Compare K+ and K- among recombination rates 
+# Compare K+ and K- among recombination rates
 # (nloci doesn't affect, neither does optPerc)
 # Variance differs between groups, use gls to account for unequal variance
 library(nlme)
-summary(gls.cev <- gls(cev ~ model * as.factor(r), d_ecr, 
+summary(gls.cev <- gls(cev ~ model * as.factor(r), d_ecr,
                        weights = varIdent(form = ~ 1 | model * as.factor(r))))
 plot(gls.cev)
-report(gls.cev)
+#report(gls.cev)
 
 anova(gls.cev)
 
@@ -500,7 +500,7 @@ library(stargazer)
 stargazer(gls.cev)
 
 # Repeat for autonomy, respondability, evolvability
-summary(gls.aut <- gls(aut ~ model * as.factor(r), d_ecr, 
+summary(gls.aut <- gls(aut ~ model * as.factor(r), d_ecr,
                        weights = varIdent(form = ~ 1 | model * as.factor(r))))
 
 anova(gls.aut)
@@ -514,7 +514,7 @@ xtable(em.aut)
 
 stargazer(gls.aut)
 
-summary(gls.res <- gls(res ~ model * as.factor(r), d_ecr, 
+summary(gls.res <- gls(res ~ model * as.factor(r), d_ecr,
                        weights = varIdent(form = ~ 1 | model * as.factor(r))))
 plot(gls.res)
 anova(gls.res)
@@ -528,7 +528,7 @@ stargazer(gls.res)
 xtable(em.res)
 
 
-summary(gls.ev <- gls(ev ~ model * as.factor(r), d_ecr, 
+summary(gls.ev <- gls(ev ~ model * as.factor(r), d_ecr,
                       weights = varIdent(form = ~ 1 | model * as.factor(r))))
 plot(gls.ev)
 anova(gls.ev)
@@ -562,23 +562,23 @@ krz_in <- krz_in[!sapply(krz_in$g,is.null)];
 # # newseed <- sample(1:.Machine$integer.max, 10)
 # # 1360932387 1900268993  991875895 1523108407  197897667  199526283 2070940443
 # # 128221287 1383031956  970870370
-# newseed <- c(1360932387, 1900268993,  991875895, 1523108407, 197897667, 199526283, 
+# newseed <- c(1360932387, 1900268993,  991875895, 1523108407, 197897667, 199526283,
 #              2070940443, 128221287, 1383031956, 970870370)
-# 
+#
 # bootPCASim <- vector(mode = "list", length = 10)
-# 
+#
 # for (i in seq_along(newseed)) {
 #   # Set seed
 #   set.seed(newseed[i])
-#   
+#
 #   # Run replicate
 #   res <- mcreplicate::mc_replicate(1000, bootKrzCorFn(krz_in, "group", T))
 #   bootPCASim[[i]] <- unnest(as.data.frame(t(res)), cols = everything())
 # }
-# 
+#
 # # Output list into combined df
 # bootPCASim2 <- bind_rows(bootPCASim)
-# 
+#
 # bootPCASim <- bootPCASim2 %>%
 #   separate(group1, c("model1", "r1"), "\\.",
 #            extra = "merge") %>%
@@ -598,9 +598,9 @@ bootPCASim <- readRDS(paste0(DATA_PATH, "d_bootPCASim.RDS"))
 bootPCASim <- bootPCASim %>%
   mutate(modelCombo = ifelse(model1 != model2, "Mix",
                              as.character(model1)),
-         rCombo = ifelse(r1 != r2, 
-                         paste(as.character(r1), 
-                               as.character(r2), sep = "_"), 
+         rCombo = ifelse(r1 != r2,
+                         paste(as.character(r1),
+                               as.character(r2), sep = "_"),
                          as.character(r1))) %>%
   filter(modelCombo != "Mix")
 
@@ -616,13 +616,13 @@ ggplot(bootPCASim_sum, aes(
 )) +
   facet_nested(. ~ "Model comparison" + modelCombo,
                labeller = labeller(modelCombo = as_labeller(c("K" = "K+ vs K+",
-                                                              "ODE" = "K- vs K-")))) + 
+                                                              "ODE" = "K- vs K-")))) +
   geom_tile(aes(fill = meanPCASim)) +
   theme_bw() +
   geom_jitter(data = bootPCASim, mapping = aes(fill = PCASim),
               shape = 21, size = 1) +
   scale_fill_viridis_c(breaks = c(0, 0.25, 0.5, 0.75, 1)) +
-  labs(x = "Recombination rate 1 (log10)", y = "Recombination rate 2 (log10)", 
+  labs(x = "Recombination rate 1 (log10)", y = "Recombination rate 2 (log10)",
        fill = "PCA Similarity") +
   theme(text = element_text(size = 12), legend.position = "bottom") +
   guides(fill = guide_colorbar(barwidth = 10))
@@ -631,7 +631,7 @@ ggsave("PCASim_r_modelCombo_noZ.png", device = png, dpi = 350,
 
 # beta regression
 # Distributions
-ggplot(bootPCASim, 
+ggplot(bootPCASim,
        aes(x = rCombo, y = PCASim)) +
   geom_quasirandom(dodge.width = 0.9)
 
@@ -644,7 +644,7 @@ bootPCASim <- bootPCASim %>%
   mutate(PCASim = raster::clamp(PCASim, 0, 1))
 
 # Run regression: this is slow! Uncomment to run, otherwise load in saved object
-# br.pcasim <- betareg(PCASim ~ modelCombo * as.factor(rCombo) | modelCombo * as.factor(rCombo), 
+# br.pcasim <- betareg(PCASim ~ modelCombo * as.factor(rCombo) | modelCombo * as.factor(rCombo),
 #                      bootPCASim)
 
 # Save output
@@ -666,7 +666,7 @@ emmip(br.pcasim,  ~ modelCombo | rCombo)
 joint_tests(em.pcasim)
 xtable(em.pcasim)
 
-# fractional logit: easier to get confidence intervals in response scale, 
+# fractional logit: easier to get confidence intervals in response scale,
 # similar results to betareg
 fl.pcasim <- glm(PCASim ~ modelCombo * as.factor(rCombo),
                  data = bootPCASim,
@@ -680,3 +680,117 @@ pairs(em.fl.pcasim, simple = "rCombo")
 pwpp(em.fl.pcasim, by = "modelCombo")
 emmip(em.fl.pcasim,  ~ modelCombo | rCombo)
 xtable(em.fl.pcasim)
+
+
+# Does additive variance prior to the optimum shift predict rate of adaptation?
+d_qg_roa <- d_qg %>%
+  group_by(seed, modelindex) %>%
+  filter(gen > 49500) %>%
+  mutate(roa = abs(phenomean - lag(phenomean)))
+
+# mean
+d_qg_roa_sum <- d_qg_roa %>%
+  group_by(seed, modelindex) %>%
+  summarise(meanROA = mean(roa),
+            CIROA = CI(roa))
+
+# Add to VA
+d_h2_roa <- inner_join(d_h2 %>% mutate(seed = factor(seed),
+                                       modelindex = factor(modelindex)),
+                       d_qg_roa %>%
+                         select(gen, seed, modelindex, optPerc, isAdapted, roa),
+                       by = c("gen", "seed", "modelindex", "optPerc", "isAdapted"))
+
+# Summarise
+d_h2_roa_sum <- d_h2_roa %>% filter(r %in% r_subsample) %>%
+  group_by(optPerc, isAdapted, model, nloci, tau, r) %>%
+  filter(!all(is.na(roa))) %>%
+  summarise(meanROA = mean(roa, na.rm = T),
+            maxROA = max(roa, na.rm = T),
+            CIROA = CI(roa, na.rm = T),
+            meanVA = mean(VA_Z, na.rm = T),
+            maxVA = max(VA_Z, na.rm = T),
+            CIVA = CI(VA_Z, na.rm = T))
+
+# Mean ROA
+ggplot(d_h2_roa_sum %>%
+         mutate(r_title = "Recombination rate (log10)") %>%
+         filter(r %in% r_subsample, tau == 0.0125),
+       aes(x = meanVA, y = meanROA, colour = model)) +
+  facet_nested(r_title + log10(r) ~ .) +
+  geom_quasirandom() +
+  labs(y = "Mean rate of phenotypic response",
+       x = TeX("Mean additive variance $(V_A)$"),
+       colour = "Model") +
+  scale_colour_manual(values = paletteer_d("nationalparkcolors::Everglades", 3, direction = -1),
+                      labels = c("Additive", "K+", "K-")) +
+  theme_bw() +
+  guides(colour = guide_legend(override.aes=list(shape = 15, size = 5))) +
+  theme(text = element_text(size = 14),
+        legend.position = "bottom")
+ggsave("plt_meanROA_meanVA.png", device = png, bg = "white",
+       width = 520*4, height = (720*4), dpi = 350, units = "px")
+
+ggplot(d_h2_roa %>%
+         mutate(r_title = "Recombination rate (log10)") %>%
+         filter(r %in% r_subsample, tau == 0.0125),
+       aes(x = VA_Z, y = roa, colour = model)) +
+  facet_nested(r_title + log10(r) ~ .) +
+  geom_quasirandom(shape = 1, alpha = 0.5) +
+  labs(y = "Rate of phenotypic response",
+       x = TeX("Additive variance $(V_A)$"),
+       colour = "Model") +
+  scale_colour_manual(values = paletteer_d("nationalparkcolors::Everglades", 3, direction = -1),
+                      labels = c("Additive", "K+", "K-")) +
+  theme_bw() +
+  guides(colour = guide_legend(override.aes=list(shape = 15, size = 5))) +
+  theme(text = element_text(size = 14),
+        legend.position = "bottom")
+ggsave("plt_roa_VA", device = png, bg = "white",
+       width = 520*4, height = (720*4), dpi = 350, units = "px")
+
+
+# Maximum rate per seed
+d_h2_roa_max <- d_h2_roa %>% filter(r %in% r_subsample) %>%
+  group_by(optPerc, isAdapted, seed, model, nloci, tau, r) %>%
+  filter(!all(is.na(roa))) %>%
+  summarise(maxROA = max(roa, na.rm = T),
+            maxVA = max(VA_Z, na.rm = T),
+            meanVA = mean(VA_Z, na.rm = T))
+
+# Max ROA
+ggplot(d_h2_roa_max %>%
+         mutate(r_title = "Recombination rate (log10)") %>%
+         filter(r %in% r_subsample, tau == 0.0125),
+       aes(x = meanVA, y = maxROA, colour = model)) +
+  facet_nested(r_title + log10(r) ~ .) +
+  geom_quasirandom(shape = 1, alpha = 0.5) +
+  labs(y = "Maximum rate of phenotypic response",
+       x = TeX("Mean additive variance $(V_A)$"),
+       colour = "Model") +
+  scale_colour_manual(values = paletteer_d("nationalparkcolors::Everglades", 3, direction = -1),
+                      labels = c("Additive", "K+", "K-")) +
+  theme_bw() +
+  guides(colour = guide_legend(override.aes=list(shape = 15, size = 5))) +
+  theme(text = element_text(size = 14),
+        legend.position = "bottom")
+ggsave("plt_maxROA_meanVA.png", device = png, bg = "white",
+       width = 520*4, height = (720*4), dpi = 350, units = "px")
+
+ggplot(d_h2_roa_max %>%
+         mutate(r_title = "Recombination rate (log10)") %>%
+         filter(r %in% r_subsample, tau == 0.0125),
+       aes(x = maxVA, y = maxROA, colour = model)) +
+  facet_nested(r_title + log10(r) ~ .) +
+  geom_quasirandom(shape = 1, alpha = 0.5) +
+  labs(y = "Maximum rate of phenotypic response",
+       x = TeX("Maximum additive variance $(V_A)$"),
+       colour = "Model") +
+  scale_colour_manual(values = paletteer_d("nationalparkcolors::Everglades", 3, direction = -1),
+                      labels = c("Additive", "K+", "K-")) +
+  theme_bw() +
+  guides(colour = guide_legend(override.aes=list(shape = 15, size = 5))) +
+  theme(text = element_text(size = 14),
+        legend.position = "bottom")
+ggsave("plt_maxROA_maxVA.png", device = png, bg = "white",
+       width = 520*4, height = (720*4), dpi = 350, units = "px")
