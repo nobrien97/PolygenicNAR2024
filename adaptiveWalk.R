@@ -65,7 +65,7 @@ ggplot(d_adapted_sum %>% filter(tau == 0.0125, r %in% r_subsample),
 ggsave("plt_adapt_smlfx.png", width = 12, height = 5, device = png, dpi = 350)
 
 #######
-# Mean Z (K+) as a function of mean Z (K-) and mean Z(Additive) (Supp fig)
+# Mean Z (K+) as a function of mean Z (K-) and mean Z(Additive) (Supp fig 5)
 d_adapted_permod_sum <- d_adapted_sum %>%
   filter(tau == 0.0125, r %in% r_subsample, nloci == 1024) %>%
   select(gen, model, nloci, tau, r, meanPhenomean, SEPhenomean) %>%
@@ -77,8 +77,16 @@ ggplot(d_adapted_permod_sum,
        aes(x = meanPhenomean_ODE, y = meanPhenomean_K, colour = factor(log10(r))),
        group = as.factor(gen)) +
   geom_line() +
+  geom_ribbon(aes(xmin = meanPhenomean_ODE - SEPhenomean_ODE,
+                  xmax = meanPhenomean_ODE + SEPhenomean_ODE,
+                  ymin = meanPhenomean_K - SEPhenomean_K,
+                  ymax = meanPhenomean_K + SEPhenomean_K,
+                  fill = factor(log10(r))),
+              colour = NA,
+              show.legend = F, alpha = 0.5) +
   geom_hline(yintercept = 2, linetype = "dashed") +
   scale_colour_manual(values = c("#41476BFF", "#9E6374FF", "#EFBC82FF")) +
+  scale_fill_manual(values = c("#41476BFF", "#9E6374FF", "#EFBC82FF")) +
   labs(x = "Mean phenotype (K-)", y = "Mean phenotype (K+)",
        colour = "Recombination rate (log10)") +
   theme_bw() +
@@ -89,19 +97,48 @@ ggplot(d_adapted_permod_sum,
        aes(x = meanPhenomean_Add, y = meanPhenomean_K, colour = factor(log10(r))),
        group = as.factor(gen)) +
   geom_line() +
+  geom_ribbon(aes(xmin = meanPhenomean_Add - SEPhenomean_Add,
+                  xmax = meanPhenomean_Add + SEPhenomean_Add,
+                  ymin = meanPhenomean_K - SEPhenomean_K,
+                  ymax = meanPhenomean_K + SEPhenomean_K,
+                  fill = factor(log10(r))),
+              colour = NA,
+              show.legend = F, alpha = 0.5) +
   geom_hline(yintercept = 2, linetype = "dashed") +
   scale_colour_manual(values = c("#41476BFF", "#9E6374FF", "#EFBC82FF")) +
+  scale_fill_manual(values = c("#41476BFF", "#9E6374FF", "#EFBC82FF")) +
   labs(x = "Mean phenotype (Additive)", y = "Mean phenotype (K+)",
        colour = "Recombination rate (log10)") +
   theme_bw() +
   theme(legend.position = "bottom", text = element_text(size = 12),
         panel.spacing = unit(0.75, "lines")) -> plt_meanpheno_KvsAdd
 
+ggplot(d_adapted_permod_sum,
+       aes(x = meanPhenomean_Add, y = meanPhenomean_ODE, colour = factor(log10(r))),
+       group = as.factor(gen)) +
+  geom_line() +
+  geom_ribbon(aes(xmin = meanPhenomean_Add - SEPhenomean_Add,
+                  xmax = meanPhenomean_Add + SEPhenomean_Add,
+                  ymin = meanPhenomean_ODE - SEPhenomean_ODE,
+                  ymax = meanPhenomean_ODE + SEPhenomean_ODE,
+                  fill = factor(log10(r))),
+              colour = NA,
+              show.legend = F, alpha = 0.5) +
+  geom_hline(yintercept = 2, linetype = "dashed") +
+  scale_colour_manual(values = c("#41476BFF", "#9E6374FF", "#EFBC82FF")) +
+  scale_fill_manual(values = c("#41476BFF", "#9E6374FF", "#EFBC82FF")) +
+  labs(x = "Mean phenotype (Additive)", y = "Mean phenotype (K-)",
+       colour = "Recombination rate (log10)") +
+  theme_bw() +
+  theme(legend.position = "bottom", text = element_text(size = 12),
+        panel.spacing = unit(0.75, "lines")) -> plt_meanpheno_ODEvsAdd
+
 leg_meanpheno <- get_legend(plt_meanpheno_KvsODE)
 
 plt_meanpheno_permodel <-
   plot_grid(plt_meanpheno_KvsAdd + theme(legend.position = "none"),
           plt_meanpheno_KvsODE + theme(legend.position = "none"),
+          plt_meanpheno_ODEvsAdd + theme(legend.position = "none"),
           nrow = 1,
           labels = "AUTO")
 
@@ -109,15 +146,15 @@ plot_grid(plt_meanpheno_permodel,
             leg_meanpheno,
             nrow = 2,
           rel_heights = c(1, 0.1))
-ggsave("plt_adapt_permod.png", width = 9, height = 4.5, bg = "white",
+ggsave("plt_adapt_permod.png", width = 12, height = 4.5, bg = "white",
        device = png, dpi = 350)
 
 
 # Burn-in evolution of molecular components vs phenotype (Fig. SY)
 d_qg_burnin <- d_qg %>%
-  filter(gen <= 50000, tau == 0.0125, nloci == 1024, model == "K", r %in% r_subsample) %>%
-  select(gen, seed, r, phenomean, aZ, bZ, KZ, KXZ) %>%
-  pivot_longer(cols = 4:8, names_to = "trait", values_to = "meanTrait")
+  filter(gen <= 50000, tau == 0.0125, model == "K") %>%
+  select(gen, seed, r, nloci, phenomean, aZ, bZ, KZ, KXZ) %>%
+  pivot_longer(cols = 5:9, names_to = "trait", values_to = "meanTrait")
 
 burnin_labels <- c(
   "aZ" = TeX("$\\alpha_Z$", output = "character"),
@@ -129,7 +166,7 @@ burnin_labels <- c(
 
 ggplot(d_qg_burnin,
        aes(x = gen, y = meanTrait,
-           group = interaction(r, seed))) +
+           group = interaction(r, nloci, seed))) +
   facet_nested("Trait/Molecular component" + trait ~ .,
                labeller = labeller(trait = as_labeller(burnin_labels, default = label_parsed))) +
   geom_line(alpha = 0.8, colour = "grey") +
