@@ -288,7 +288,8 @@ s1 late() {
 	
 	
 	// Check if we are sampling type 1 output this generation (quant gen)
-	if (sim.cycle % samplerate[0])
+	// Write generation 1 data for initial KZ/KXZ values
+	if (sim.cycle % samplerate[0] & sim.cycle != 1)
 		return;
 	
 	writeQuantGenOutput(p1, "burnin");
