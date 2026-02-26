@@ -410,42 +410,32 @@ em.ld.molcomp.k.mean <- emmeans(gls.ld.molcomp.k.mean, ~ mutType * r)
 pairs(em.ld.molcomp.k.mean, simple = "mutType")
 plot(em.ld.molcomp.k.mean, comparisons = T)
 joint_tests(em.ld.molcomp)
-
-
-gls.ld.molcomp.kz.mean <- gls(meanD ~ mutTypeKZ * r, d_ld_molcomp_gls_kz,
-                         weights = varIdent(form = ~ 1 | r))
-summary(gls.ld.molcomp.kz.mean)
-plot(gls.ld.molcomp.kz.mean)
-anova(gls.ld.molcomp.kz.mean)
-
-em.ld.molcomp.kz.mean <- emmeans(gls.ld.molcomp.kz.mean, ~ mutTypeKZ * r)
-pairs(em.ld.molcomp.kz.mean, simple = "mutTypeKZ", reverse = T)
-plot(em.ld.molcomp.kz.mean, comparisons = T)
-joint_tests(em.ld.molcomp.kz.mean)
+# Differs per mutType rather than presence/absence of KZ
 
 # Comparisons
-pwpm(em.ld.molcomp.kz.mean)
+pwpm(em.ld.molcomp.k.mean)
 
-summary(em.ld.molcomp.kz.mean, infer = T, type = "response")
-em_pred_kz_mean <- update(em.ld.molcomp.kz.mean)
-em_pred_kz_mean_sum <- summary(em_pred_kz_mean, infer = c(TRUE, FALSE), adjust = "none", type = "lp")
+summary(em.ld.molcomp.k.mean, infer = T, type = "response")
+em_pred_k_mean <- update(em.ld.molcomp.k.mean)
+em_pred_k_mean_sum <- summary(em_pred_k_mean, infer = c(TRUE, FALSE), adjust = "none", type = "lp")
 
-ggplot(em_pred_kz_mean_sum %>% mutate(r = factor(log10(as.numeric(as.character(r))))),
-       aes(x = emmean, y = mutTypeKZ, colour = r)) +
-  geom_errorbar(aes(xmin = lower.CL, xmax = upper.CL, y = mutTypeKZ,
-                   colour = r), position = position_dodge(0.3, orientation = "y"),
-                width = 0.2) +
-  geom_point(position = position_dodge(0.3, orientation = "y")) +
-  scale_y_discrete(labels =
-                     parse(text = c(TeX("Does not contain $K_Z", output = "character"),
-                                    TeX("Contains $K_Z", output = "character")))) +
+ggplot(em_pred_k_mean_sum %>% mutate(r = factor(log10(as.numeric(as.character(r))))),
+       aes(x = emmean, y = mutType, colour = r)) +
+  geom_errorbar(aes(xmin = lower.CL, xmax = upper.CL, y = mutType,
+                   colour = r), position = position_dodge(0.7, orientation = "y"),
+                width = 0.5) +
+  geom_point(position = position_dodge(0.7, orientation = "y")) +
+  ggbrace::stat_brace(aes(x = -0.002, y = mutType, colour = NA), colour = "black",
+                      outerstart = -0.002125, discreteAxis = T,
+                      rotate = 270, width = 0.0002) +
+  coord_cartesian(x = c(-0.002, 0.005), clip = "off") +
+  scale_y_discrete(labels = parse(text = mutType_comp_labeller)) +
   scale_colour_manual(values = c("#41476BFF", "#9E6374FF", "#EFBC82FF")) +
-  labs(x = TeX("Predicted mean of D"),
+  labs(x = TeX("Predicted mean D"),
        y = "D pairwise comparison identity",
        colour = TeX("Recombination rate ($log_{10}$)")) +
   theme_bw() +
-  theme(text = element_text(size = 12), legend.position = "bottom",
-        axis.text.y = element_text(angle = 90, hjust = 0.5)) -> plt_ld_pred_mean
+  theme(text = element_text(size = 12), legend.position = "bottom") -> plt_ld_pred_mean
 plt_ld_pred_mean
 
 leg <- get_legend(plt_ld_pred_mean)
