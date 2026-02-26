@@ -36,7 +36,10 @@ d_adapted_sum <- d_qg %>%
             SEPhenomean = se(phenomean),
             sdPhenomean = sd(phenomean),
             meanPhenovar = mean(phenovar),
-            sdPhenovar = sd(phenovar))
+            sdPhenovar = sd(phenovar),
+            SEH = se(meanH),
+            meanH = mean(meanH)
+            )
 
 # Small fx only: Fig. 1
 ggplot(d_adapted_sum %>% filter(tau == 0.0125, r %in% r_subsample),
@@ -353,14 +356,13 @@ d_adapted_rs_sum <- d_qg_rs %>%
 ggplot(d_adapted_rs_sum %>% filter(tau == 0.0125, r %in% r_subsample),
        aes(x = gen, y = meanPhenomean, colour = model),
        group = as.factor(seed)) +
-  facet_grid(log10(r)~.) +
+  geom_hline(aes(yintercept = 2), linetype = "dashed") +
+  facet_nested("Recombination rate (log10)" + log10(r) ~ .) +
   geom_line() +
-  geom_hline(yintercept = 2, linetype = "dashed") +
   geom_ribbon(aes(ymin = meanPhenomean - sdPhenomean,
                   ymax = meanPhenomean + sdPhenomean, fill = model), colour = NA,
               alpha = 0.2) +
-  scale_y_continuous(sec.axis = sec_axis(~ ., name = "Recombination rate (log10)",
-                                         breaks = NULL, labels = NULL)) +
+  scale_x_continuous(labels = scales::comma) +
   scale_colour_manual(values = paletteer_d("nationalparkcolors::Everglades", 3, direction = -1)[2:3],
                       labels = c("K+", "K-")) +
   scale_fill_manual(values = paletteer_d("nationalparkcolors::Everglades", 3, direction = -1)[2:3],
@@ -369,5 +371,82 @@ ggplot(d_adapted_rs_sum %>% filter(tau == 0.0125, r %in% r_subsample),
        colour = "Model") +
   theme_bw() +
   theme(legend.position = "bottom", text = element_text(size = 12),
-        panel.spacing = unit(0.75, "lines"))
+        panel.spacing = unit(0.75, "lines")) -> plt_rs_walk
+plt_rs_walk
 ggsave("plt_adapt_rs.png", width = 6, height = 5, device = png)
+
+# Plot the simulations where different molecular components contributed to
+# adaptation
+d_rs_key <- d_qg_rs %>%
+  group_by(seed, model, r) %>%
+  summarise(covZ_aZ = cor(deltaPheno, aZ),
+            covZ_bZ = cor(deltaPheno, bZ),
+            covZ_KZ = cor(deltaPheno, KZ),
+            covZ_KXZ = cor(deltaPheno, KXZ)) %>%
+  ungroup() %>%
+  group_by(seed, model, r) %>%
+    mutate(
+      keyTrait = match(max(abs(covZ_aZ), abs(covZ_bZ),
+                           abs(covZ_KZ), abs(covZ_KXZ), na.rm = T),
+                       c(abs(covZ_aZ), abs(covZ_bZ),
+                         abs(covZ_KZ), abs(covZ_KXZ)))) %>%
+  ungroup() %>%
+  group_by(model, r) %>%
+  summarise(nKey_aZ = sum(keyTrait == 1),
+            nKey_bZ = sum(keyTrait == 2),
+            nKey_KZ = sum(keyTrait == 3),
+            nKey_KXZ = sum(keyTrait == 4)) %>%
+  pivot_longer(cols = starts_with("nKey"),
+               names_prefix = "nKey_",
+               names_to = "key",
+               values_to = "n")
+
+ggplot(d_rs_key,
+       aes(x = key, y = n / 48, fill = model)) +
+  facet_nested("Recombination rate (log10)" + factor(log10(r)) ~ .) +
+  geom_col(position = position_dodge(0.9)) +
+#  geom_boxplot(position = position_dodge(0.9)) +
+  scale_fill_manual(values = paletteer_d("nationalparkcolors::Everglades", 3, direction = -1)[2:3],
+                      labels = c("K+", "K-")) +
+  scale_x_discrete(labels = parse(text = burnin_labels[1:4])) +
+  labs(x = "Key molecular component", y = "Proportion of replicates",
+       fill = "Model") +
+  theme_bw() +
+  theme(legend.position = "bottom", text = element_text(size = 12)) -> plt_rs_keytraits
+
+leg <- get_legend(plt_rs_keytraits)
+
+plt_rs <- plot_grid(plt_rs_walk + theme(legend.position = "none"),
+            plt_rs_keytraits + theme(legend.position = "none"),
+            nrow = 1,
+            rel_widths = c(1, 0.5),
+            align = "h",
+            labels = "AUTO")
+
+plot_grid(plt_rs,
+          leg,
+          nrow = 2,
+          rel_heights = c(1, 0.1))
+ggsave("plt_rs.png", width = 7, height = 5, device = png, bg = "white")
+
+# Plot heterozygosity over time - elevated in K+ if balancing selection is maintaining
+# polymorphism
+ggplot(d_adapted_sum %>% filter(tau == 0.0125, r %in% r_subsample, nloci == 1024),
+       aes(x = gen, y = meanH, colour = model)) +
+  facet_nested("Recombination rate (log10)" + log10(r)~.) +
+  geom_line() +
+  geom_ribbon(aes(ymin = meanH - SEH,
+                  ymax = meanH + SEH, fill = model), colour = NA,
+              alpha = 0.2) +
+  scale_x_continuous(labels = scales::comma) +
+  scale_colour_manual(values = paletteer_d("nationalparkcolors::Everglades", 3, direction = -1),
+                      labels = c("Additive", "K+", "K-")) +
+  scale_fill_manual(values = paletteer_d("nationalparkcolors::Everglades", 3, direction = -1),
+                    labels = c("Additive", "K+", "K-"), guide = "none") +
+  labs(x = "Generations post-optimum shift", y = "Mean genome-wide heterozygosity",
+       colour = "Model") +
+  theme_bw() +
+  theme(legend.position = "bottom", text = element_text(size = 12),
+        panel.spacing = unit(0.75, "lines"))
+ggsave("plt_meanH_smlfx.png", width = 5, height = 8, device = png, dpi = 350)
+

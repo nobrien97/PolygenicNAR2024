@@ -13,6 +13,7 @@ WRITE_PATH <- paste0("/scratch_path/calcLDR/")
 GDATA_PATH <- paste0("/storage_path/runSims/")
 FILE_LD <- paste0(WRITE_PATH, "out_LD_", run, ".csv")
 FILE_LD_F <- paste0(WRITE_PATH, "out_LDf_", run, ".csv")
+FILE_LD_M <- paste0(WRITE_PATH, "out_LDm_", run, ".csv")
 FILE_LD_TABLE <- paste0(WRITE_PATH, "out_LD_raw_", run, ".csv")
 
 FNS_PATH <- "~/tests/runSims/calcMutationStats/R/"
@@ -119,7 +120,7 @@ d_LD <- data.frame(gen = rep(model_info[1], times = length(D)),
                    mutType_AB = rep("3_3", times = length(D)),
                    D = D)
 
-if (d_muts$model != "Add") {
+if (d_muts$model[1] != "Add") {
   d_LD$mutType_AB <- d_rank$mutType_ab
 }
 
@@ -173,7 +174,34 @@ for (i in seq_along(bin_labels)) {
   sum_LD_f[,labels[i]] <- length(LDbins[LDbins == bin_labels[i]])
 }
 
+# Summarise: by mut type
+sum_LD_m <- d_LD %>%
+group_by(mutType_AB) %>%
+  summarise(meanD = mean(D),
+            sdD = sd(D),
+            nD = length(D),
+            nDP = length(D[D > 0.05]),
+            nDN = length(D[D < -0.05]),
+            nDHalf = length(D[abs(D) > 0.05]))
+
+sum_LD_m$gen <- model_info[1]
+sum_LD_m$seed <- model_info[2]
+sum_LD_m$modelindex <- model_info[3]
+
+sum_LD_m <- sum_LD_m %>% relocate(gen, seed, modelindex)
+
+# Add counts of 10% groups for a histogram with 21 bins
+labels <- paste0("n", 1:21)
+bins <- seq(-0.25, 0.25, length.out = 21)
+
+for (i in seq_along(bin_labels)) {
+  sum_LD_m[,labels[i]] <- length(LDbins[LDbins == bin_labels[i]])
+}
+
+
+
 # Write output
 write.table(sum_LD, FILE_LD, row.names = F, col.names = F)
 write.table(sum_LD_f, FILE_LD_F, row.names = F, col.names = F)
+write.table(sum_LD_m, FILE_LD_M, row.names = F, col.names = F)
 write.table(d_LD, FILE_LD_TABLE, row.names = F, col.names = F)

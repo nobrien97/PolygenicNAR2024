@@ -11,7 +11,7 @@ JOBNAME=runSims/calcLD
 # These variables are assumed to be set:
 #   NJOBS is the total number of jobs in a sequence of jobs (defaults to 1)
 #   NJOB is the number of the current job in the sequence (defaults to 0)
-#   For this job, NJOBS should = 1
+#   For this job, NJOBS should = 5
   
 if [ X$NJOBS == X ]; then
     $ECHO "NJOBS (total number of jobs in sequence) is not set - defaulting to 1"
