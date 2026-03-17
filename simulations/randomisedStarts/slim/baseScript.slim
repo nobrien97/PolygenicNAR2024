@@ -300,7 +300,7 @@ s1 late() {
 	
 	
 	// Check if we are sampling type 2 output this generation (alleles)
-	if (sim.cycle % samplerate[1])
+	if (sim.cycle % samplerate[1] & sim.cycle != 1)
 		return;
 	writeAlleleData();
 	writeIndOutput(p1);

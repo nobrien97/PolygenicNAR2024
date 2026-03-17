@@ -1,8 +1,8 @@
 #!/bin/bash -l
 #PBS -l walltime=24:00:00
-#PBS -l ncpus=288
-#PBS -l mem=1140GB
-#PBS -l jobfs=1000GB
+#PBS -l ncpus=1440
+#PBS -l mem=5700GB
+#PBS -l jobfs=12000GB
   
   
 ECHO=/bin/echo
