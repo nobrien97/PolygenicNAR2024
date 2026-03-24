@@ -347,6 +347,18 @@ h2_pd <- lapply(h2_mat, function(x) {
   if (!is.positive.definite(x)) {as.matrix(nearPD(x)$mat)}
 })
 
+# Calculate distance between matrices: how much have we had to change them?
+h2_pd_dist <- data.frame(id = integer(length(h2_pd)),
+                         dist = numeric(length(h2_pd)))
+
+for (i in seq_along(h2_pd)) {
+  h2_pd_dist[i,]$id <- i
+  h2_pd_dist[i,]$dist <- sum((h2_pd[[i]] - h2_mat[[i]])^2)
+}
+
+ggplot(h2_pd_dist, aes(y = dist)) +
+  geom_boxplot() +
+  labs(y = "Sum of squared deviations")
 
 d_ecr <- CalcECRA(h2_pd,
                   id, noZ = T)
@@ -803,3 +815,25 @@ ggplot(d_h2_roa_max %>%
         legend.position = "bottom")
 ggsave("plt_maxROA_maxVA.png", device = png, bg = "white",
        width = 520*4, height = (720*4), dpi = 350, units = "px")
+
+# Median matrix for each group
+d_h2_pd <- Reduce(rbind.data.frame, lapply(h2_pd, as.vector))
+
+d_h2_pd$optPerc <- id$optPerc
+d_h2_pd$seed <- id$seed
+d_h2_pd$modelindex <- id$modelindex
+
+d_h2_pd <- AddCombosToDF(d_h2_pd)
+
+d_h2_pd %>%
+  filter(tau == 0.0125, optPerc == "(0.75, Inf]") %>%
+  group_by(optPerc, model, r) %>%
+  summarise(Gmedian = Gmedian(pick(1:25))) -> Gmedians
+
+matrix(Gmedians$Gmedian[2,], nrow = 5,
+       dimnames = list(colnames(h2_pd[[1]]),
+                       rownames(h2_pd[[1]])))[-3,-3]
+matrix(Gmedians$Gmedian[5,], nrow = 5,
+       dimnames = list(colnames(h2_pd[[1]]),
+                       rownames(h2_pd[[1]])))[-3,-3]
+
