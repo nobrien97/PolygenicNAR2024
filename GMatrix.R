@@ -349,16 +349,26 @@ h2_pd <- lapply(h2_mat, function(x) {
 
 # Calculate distance between matrices: how much have we had to change them?
 h2_pd_dist <- data.frame(id = integer(length(h2_pd)),
-                         dist = numeric(length(h2_pd)))
+                         dist = numeric(length(h2_pd)),
+                         meanValue = numeric(length(h2_pd)))
 
 for (i in seq_along(h2_pd)) {
   h2_pd_dist[i,]$id <- i
-  h2_pd_dist[i,]$dist <- sum((h2_pd[[i]] - h2_mat[[i]])^2)
+  h2_pd_dist[i,]$dist <- sqrt(sum((h2_pd[[i]][-3,-3] - h2_mat[[i]][-3,-3])^2))
+  h2_pd_dist[i,]$meanValue <- mean(h2_mat[[i]][-3,-3])
 }
 
-ggplot(h2_pd_dist, aes(y = dist)) +
-  geom_boxplot() +
-  labs(y = "Sum of squared deviations")
+# Plot the Frobenius norm scaled by the mean of the elements of the original matrix
+ggplot(h2_pd_dist, aes(x = factor(0), y = dist / meanValue)) +
+  geom_boxplot(width = 0.1) +
+  labs(y = "Frobenius norm / mean value", x = "") +
+  theme_bw() +
+  theme(text = element_text(size = 12),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank)
+
+quantile(h2_pd_dist$dist / h2_pd_dist$meanValue)
+
 
 d_ecr <- CalcECRA(h2_pd,
                   id, noZ = T)
