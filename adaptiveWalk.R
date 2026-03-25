@@ -29,6 +29,7 @@ stargazer(d_prop_adapted)
 
 # Summarise phenotype trajectories
 d_adapted_sum <- d_qg %>%
+  group_by(gen, model, nloci, tau, r) %>%
   filter(isAdapted, gen >= 49500) %>%
   mutate(gen = gen - 50000) %>%
   group_by(gen, model, nloci, tau, r) %>%
@@ -41,13 +42,30 @@ d_adapted_sum <- d_qg %>%
             meanH = mean(meanH)
             )
 
+d_adapted_fig_prop <- d_qg %>%
+  group_by(gen, model, nloci, tau, r) %>%
+  filter(gen >= 49500) %>%
+  mutate(gen = gen - 50000) %>%
+  group_by(gen, model, nloci, tau, r) %>%
+  summarise(n = n(),
+            nAdapted = sum(isAdapted),
+            pAdapted = mean(isAdapted)
+  )
+
 # Small fx only: Fig. 1
+SPACER <- 0.2
 ggplot(d_adapted_sum %>% filter(tau == 0.0125, r %in% r_subsample),
-       aes(x = gen, y = meanPhenomean, colour = model),
-       group = as.factor(seed)) +
+       aes(x = gen, y = meanPhenomean, colour = model)) +
   facet_grid(log10(r)~nloci) +
   geom_line() +
   geom_hline(yintercept = 2, linetype = "dashed") +
+  geom_text(data = d_adapted_fig_prop %>% 
+              filter(gen == -500, tau == 0.0125, r %in% r_subsample) %>%
+              mutate(pAdapted = round(pAdapted, digits = 3)), 
+            aes(x = 7500, 
+                y = 0.8 + SPACER * as.numeric(factor(model, levels = c("Add", "K", "ODE"))), 
+                label = paste("p =", pAdapted), colour = model),
+            show.legend = F) +
   geom_ribbon(aes(ymin = meanPhenomean - sdPhenomean,
                   ymax = meanPhenomean + sdPhenomean, fill = model), colour = NA,
               alpha = 0.2) +
